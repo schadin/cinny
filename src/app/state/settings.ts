@@ -42,6 +42,8 @@ export interface Settings {
 
   showNotifications: boolean;
   isNotificationSounds: boolean;
+  showChatsInSpace: Record<string, boolean>;
+  spaceHiddenUsers: Record<string, string>;
 
   hour24Clock: boolean;
   dateFormatString: string;
@@ -76,6 +78,8 @@ const defaultSettings: Settings = {
 
   showNotifications: true,
   isNotificationSounds: true,
+  showChatsInSpace: {},
+  spaceHiddenUsers: {},
 
   hour24Clock: false,
   dateFormatString: 'D MMM YYYY',

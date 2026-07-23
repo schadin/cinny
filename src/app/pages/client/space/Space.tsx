@@ -48,6 +48,7 @@ import {
 import { useSpace } from '../../../hooks/useSpace';
 import { VirtualTile } from '../../../components/virtualizer';
 import { RoomNavCategoryButton, RoomNavItem } from '../../../features/room-nav';
+import { SpaceMemberList } from '../../../features/space-nav';
 import { makeNavCategoryId } from '../../../state/closedNavCategories';
 import { roomToUnreadAtom } from '../../../state/room/roomToUnread';
 import { useCategoryHandler } from '../../../hooks/useCategoryHandler';
@@ -94,6 +95,8 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
   const mx = useMatrixClient();
   const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
   const [developerTools] = useSetting(settingsAtom, 'developerTools');
+  const [showChatsInSpace, setShowChatsInSpace] = useSetting(settingsAtom, 'showChatsInSpace');
+  const showChats = showChatsInSpace[room.roomId] ?? true;
   const roomToParents = useAtomValue(roomToParentsAtom);
   const powerLevels = usePowerLevels(room);
   const creators = useRoomCreators(room);
@@ -135,6 +138,11 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
 
   const handleOpenTimeline = () => {
     navigateRoom(room.roomId);
+    requestClose();
+  };
+
+  const handleToggleChats = () => {
+    setShowChatsInSpace({ ...showChatsInSpace, [room.roomId]: !showChats });
     requestClose();
   };
 
@@ -196,6 +204,16 @@ const SpaceMenu = forwardRef<HTMLDivElement, SpaceMenuProps>(({ room, requestClo
         >
           <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
             Space Settings
+          </Text>
+        </MenuItem>
+        <MenuItem
+          onClick={handleToggleChats}
+          size="300"
+          after={<Icon size="100" src={showChats ? Icons.Eye : Icons.EyeBlind} />}
+          radii="300"
+        >
+          <Text style={{ flexGrow: 1 }} as="span" size="T300" truncate>
+            {showChats ? 'Hide Chats' : 'Show Chats'}
           </Text>
         </MenuItem>
         {developerTools && (
@@ -392,6 +410,8 @@ export function Space() {
   const lobbySelected = useSpaceLobbySelected(spaceIdOrAlias);
   const searchSelected = useSpaceSearchSelected(spaceIdOrAlias);
   const callEmbed = useCallEmbed();
+  const [showChatsInSpace] = useSetting(settingsAtom, 'showChatsInSpace');
+  const showChats = showChatsInSpace[space.roomId] ?? true;
 
   const [closedCategories, setClosedCategories] = useAtom(useClosedNavCategoriesAtom());
 
@@ -484,6 +504,7 @@ export function Space() {
               </NavLink>
             </NavItem>
           </NavCategory>
+          {showChats && <SpaceMemberList space={space} />}
           <NavCategory
             style={{
               height: virtualizer.getTotalSize(),
