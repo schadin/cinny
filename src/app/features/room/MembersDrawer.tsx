@@ -32,6 +32,7 @@ import classNames from 'classnames';
 
 import * as css from './MembersDrawer.css';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
+import { useCustomStatus } from '../../hooks/useCustomStatus';
 import { UseStateProvider } from '../../components/UseStateProvider';
 import {
   SearchItemStrGetter,
@@ -125,6 +126,7 @@ function MemberItem({
   const avatarUrl = avatarMxcUrl
     ? mx.mxcUrlToHttp(avatarMxcUrl, 100, 100, 'crop', undefined, false, useAuthentication)
     : undefined;
+  const status = useCustomStatus(member.userId);
 
   return (
     <MenuItem
@@ -152,10 +154,18 @@ function MemberItem({
         )
       }
     >
-      <Box grow="Yes">
-        <Text size="T400" truncate>
-          {name}
-        </Text>
+      <Box grow="Yes" direction="Column" gap="0" justifyContent="Center">
+        <Box alignItems="Center" gap="200">
+          <Text size="T400" truncate>
+            {name}
+          </Text>
+          {status?.emoji && <Text size="T400">{status.emoji}</Text>}
+        </Box>
+        {status?.text && (
+          <Text size="T200" priority="300" truncate>
+            {status.text}
+          </Text>
+        )}
       </Box>
     </MenuItem>
   );

@@ -18,6 +18,7 @@ import colorMXID from '../../../util/colorMXID';
 import { getMxIdLocalPart } from '../../utils/matrix';
 import { BreakWord, LineClamp3 } from '../../styles/Text.css';
 import { UserPresence } from '../../hooks/useUserPresence';
+import { useCustomStatus } from '../../hooks/useCustomStatus';
 import { AvatarPresence, PresenceBadge } from '../presence';
 import { ImageViewer } from '../image-viewer';
 import { stopPropagation } from '../../utils/keyboard';
@@ -98,10 +99,12 @@ type UserHeroNameProps = {
 };
 export function UserHeroName({ displayName, userId }: UserHeroNameProps) {
   const username = getMxIdLocalPart(userId);
+  const status = useCustomStatus(userId);
 
   return (
     <Box grow="Yes" direction="Column" gap="0">
       <Box alignItems="Baseline" gap="200" wrap="Wrap">
+        {status?.emoji && <Text size="H4">{status.emoji}</Text>}
         <Text
           size="H4"
           className={classNames(BreakWord, LineClamp3)}
@@ -115,6 +118,13 @@ export function UserHeroName({ displayName, userId }: UserHeroNameProps) {
           @{username}
         </Text>
       </Box>
+      {status?.text && (
+        <Box alignItems="Center" gap="100" wrap="Wrap">
+          <Text size="T200" className={classNames(BreakWord, LineClamp3)} priority="300">
+            {status.text}
+          </Text>
+        </Box>
+      )}
     </Box>
   );
 }

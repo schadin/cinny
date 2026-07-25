@@ -3,6 +3,7 @@ import { Box, Text, IconButton, Icon, Icons, Scroll } from 'folds';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { MatrixId } from './MatrixId';
 import { Profile } from './Profile';
+import { ProfileStatus } from './ProfileStatus';
 import { ContactInformation } from './ContactInfo';
 import { IgnoredUserList } from './IgnoredUserList';
 
@@ -31,6 +32,7 @@ export function Account({ requestClose }: AccountProps) {
           <PageContent>
             <Box direction="Column" gap="700">
               <Profile />
+              <ProfileStatus />
               <MatrixId />
               <ContactInformation />
               <IgnoredUserList />

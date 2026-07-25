@@ -1,4 +1,5 @@
 import { atom } from 'jotai';
+import { StatusPreset } from '../plugins/custom-status';
 
 const STORAGE_KEY = 'settings';
 export type DateFormat =
@@ -49,6 +50,7 @@ export interface Settings {
   dateFormatString: string;
 
   developerTools: boolean;
+  statusPresets: StatusPreset[];
 }
 
 const defaultSettings: Settings = {
@@ -85,6 +87,7 @@ const defaultSettings: Settings = {
   dateFormatString: 'D MMM YYYY',
 
   developerTools: false,
+  statusPresets: [],
 };
 
 export const getSettings = () => {

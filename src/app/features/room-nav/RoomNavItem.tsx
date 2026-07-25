@@ -37,7 +37,8 @@ import { useRoomTypingMember } from '../../hooks/useRoomTypingMembers';
 import { TypingIndicator } from '../../components/typing-indicator';
 import { stopPropagation } from '../../utils/keyboard';
 import { getMatrixToRoom } from '../../plugins/matrix-to';
-import { getCanonicalAliasOrRoomId, isRoomAlias } from '../../utils/matrix';
+import { getCanonicalAliasOrRoomId, guessDmRoomUserId, isRoomAlias } from '../../utils/matrix';
+import { useCustomStatus } from '../../hooks/useCustomStatus';
 import { getViaServers } from '../../plugins/via-servers';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import { useSetting } from '../../state/hooks/settings';
@@ -265,6 +266,8 @@ export function RoomNavItem({
   );
 
   const roomName = useRoomName(room);
+  const dmUserId = direct ? guessDmRoomUserId(room, mx.getUserId()!) : undefined;
+  const dmStatus = useCustomStatus(dmUserId ?? '');
 
   const handleContextMenu: MouseEventHandler<HTMLElement> = (evt) => {
     evt.preventDefault();
@@ -357,10 +360,22 @@ export function RoomNavItem({
                 />
               )}
             </Avatar>
-            <Box as="span" grow="Yes">
-              <Text priority={unread ? '500' : '300'} as="span" size="Inherit" truncate>
-                {roomName}
-              </Text>
+            <Box as="span" grow="Yes" direction="Column" gap="0" justifyContent="Center">
+              <Box as="span" alignItems="Center" gap="200">
+                <Text priority={unread ? '500' : '300'} as="span" size="Inherit" truncate>
+                  {roomName}
+                </Text>
+                {direct && dmStatus?.emoji && (
+                  <Text as="span" size="Inherit" priority="300">
+                    {dmStatus.emoji}
+                  </Text>
+                )}
+              </Box>
+              {direct && dmStatus?.text && (
+                <Text as="span" size="T200" priority="300" truncate>
+                  {dmStatus.text}
+                </Text>
+              )}
             </Box>
             {!optionsVisible && !unread && !selected && typingMember.length > 0 && (
               <Badge size="300" variant="Secondary" fill="Soft" radii="Pill" outlined>

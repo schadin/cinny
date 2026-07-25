@@ -22,6 +22,7 @@ import {
   getMxIdLocalPart,
 } from '../../utils/matrix';
 import { getMemberDisplayName } from '../../utils/room';
+import { useCustomStatus } from '../../hooks/useCustomStatus';
 import { getSpaceRoomPath } from '../../pages/pathUtils';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
 import { roomToUnreadAtom } from '../../state/room/roomToUnread';
@@ -47,7 +48,7 @@ export function SpaceMemberNavItem({ member, space }: SpaceMemberNavItemProps) {
 
   const existingDM = useMemo(() => {
     for (const roomId of mDirects) {
-      if (!allRooms.has(roomId)) continue;
+      if (!allRooms.includes(roomId)) continue;
       const room = mx.getRoom(roomId);
       if (room && room.getMember(member.userId)) {
         return room;
@@ -89,6 +90,7 @@ export function SpaceMemberNavItem({ member, space }: SpaceMemberNavItemProps) {
     getMemberDisplayName(space, member.userId) ??
     getMxIdLocalPart(member.userId) ??
     member.userId;
+  const status = useCustomStatus(member.userId);
   const avatarMxcUrl = member.getMxcAvatarUrl();
   const avatarUrl = avatarMxcUrl
     ? mx.mxcUrlToHttp(avatarMxcUrl, 100, 100, 'crop', undefined, false, useAuthentication)
@@ -141,10 +143,18 @@ export function SpaceMemberNavItem({ member, space }: SpaceMemberNavItemProps) {
               renderFallback={() => <Icon size="100" src={Icons.User} filled />}
             />
           </Avatar>
-          <Box as="span" grow="Yes">
-            <Text as="span" size="Inherit" truncate>
-              {name}
-            </Text>
+          <Box as="span" grow="Yes" direction="Column" gap="0" justifyContent="Center">
+            <Box as="span" alignItems="Center" gap="200">
+              <Text as="span" size="Inherit" truncate>
+                {name}
+              </Text>
+              {status?.emoji && <Text as="span" size="Inherit">{status.emoji}</Text>}
+            </Box>
+            {status?.text && (
+              <Text as="span" size="T200" priority="300" truncate>
+                {status.text}
+              </Text>
+            )}
           </Box>
           {unread && unread.total > 0 && (
             <UnreadBadgeCenter>

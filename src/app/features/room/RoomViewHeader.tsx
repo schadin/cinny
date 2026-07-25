@@ -37,7 +37,8 @@ import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { useSpaceOptionally } from '../../hooks/useSpace';
 import { getHomeSearchPath, getSpaceSearchPath, withSearchParam } from '../../pages/pathUtils';
-import { getCanonicalAliasOrRoomId, isRoomAlias, mxcUrlToHttp } from '../../utils/matrix';
+import { getCanonicalAliasOrRoomId, guessDmRoomUserId, isRoomAlias, mxcUrlToHttp } from '../../utils/matrix';
+import { useCustomStatus } from '../../hooks/useCustomStatus';
 import { _SearchPathSearchParams } from '../../pages/paths';
 import * as css from './RoomViewHeader.css';
 import { useRoomUnread } from '../../state/hooks/unread';
@@ -410,6 +411,8 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
   const encryptedRoom = !!encryptionEvent;
   const avatarMxc = useRoomAvatar(room, direct);
   const name = useRoomName(room);
+  const dmUserId = direct ? guessDmRoomUserId(room, mx.getUserId()!) : undefined;
+  const dmStatus = useCustomStatus(dmUserId ?? '');
   const topic = useRoomTopic(room);
   const avatarUrl = avatarMxc
     ? mxcUrlToHttp(mx, avatarMxc, useAuthentication, 96, 96, 'crop') ?? undefined
@@ -475,10 +478,18 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               />
             </Avatar>
           )}
-          <Box direction="Column">
-            <Text size={topic ? 'H5' : 'H3'} truncate>
-              {name}
-            </Text>
+          <Box direction="Column" justifyContent="Center">
+            <Box alignItems="Center" gap="200">
+              <Text size={topic ? 'H5' : 'H3'} truncate>
+                {name}
+              </Text>
+              {direct && dmStatus?.emoji && <Text size={topic ? 'H5' : 'H3'}>{dmStatus.emoji}</Text>}
+            </Box>
+            {direct && dmStatus?.text && (
+              <Text size="T200" priority="300" truncate>
+                {dmStatus.text}
+              </Text>
+            )}
             {topic && (
               <UseStateProvider initial={false}>
                 {(viewTopic, setViewTopic) => (
