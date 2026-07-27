@@ -29,6 +29,7 @@ import { useUserProfile } from '../../../hooks/useUserProfile';
 import { Modal500 } from '../../../components/Modal500';
 import { StatusEditor } from '../../../features/settings/account/ProfileStatus';
 import { stopPropagation } from '../../../utils/keyboard';
+import { StatusButton } from './StatusButton';
 
 export function SettingsTab() {
   const mx = useMatrixClient();
@@ -64,53 +65,56 @@ export function SettingsTab() {
     <SidebarItem active={settings || !!menuAnchor}>
       <SidebarItemTooltip tooltip="User Settings">
         {(triggerRef) => (
-          <PopOut
-            anchor={menuAnchor}
-            position="Right"
-            align="End"
-            content={
-              <FocusTrap
-                focusTrapOptions={{
-                  initialFocus: false,
-                  returnFocusOnDeactivate: false,
-                  onDeactivate: closeMenu,
-                  clickOutsideDeactivates: true,
-                  isKeyForward: (evt: KeyboardEvent) => evt.key === 'ArrowDown',
-                  isKeyBackward: (evt: KeyboardEvent) => evt.key === 'ArrowUp',
-                  escapeDeactivates: stopPropagation,
-                }}
-              >
-                <Menu variant="Surface" style={{ padding: config.space.S200, width: 'max-content' }}>
-                  <Box direction="Column" gap="100">
-                    <MenuItem size="300" radii="300" onClick={openStatusEditor}>
-                      <Box gap="200" grow="Yes" alignItems="Center">
-                        <Icon size="100" src={Icons.SmilePlus} />
-                        <Text as="span" size="T300" truncate>
-                          Custom Status
-                        </Text>
-                      </Box>
-                    </MenuItem>
-                    <MenuItem size="300" radii="300" onClick={openSettings}>
-                      <Box gap="200" grow="Yes" alignItems="Center">
-                        <Icon size="100" src={Icons.Setting} />
-                        <Text as="span" size="T300" truncate>
-                          User Settings
-                        </Text>
-                      </Box>
-                    </MenuItem>
-                  </Box>
-                </Menu>
-              </FocusTrap>
-            }
-          >
-            <SidebarAvatar as="button" ref={triggerRef} onClick={openMenu}>
-              <UserAvatar
-                userId={userId}
-                src={avatarUrl}
-                renderFallback={() => <Text size="H4">{nameInitials(displayName)}</Text>}
-              />
-            </SidebarAvatar>
-          </PopOut>
+          <div style={{ position: 'relative' }}>
+            <PopOut
+              anchor={menuAnchor}
+              position="Right"
+              align="End"
+              content={
+                <FocusTrap
+                  focusTrapOptions={{
+                    initialFocus: false,
+                    returnFocusOnDeactivate: false,
+                    onDeactivate: closeMenu,
+                    clickOutsideDeactivates: true,
+                    isKeyForward: (evt: KeyboardEvent) => evt.key === 'ArrowDown',
+                    isKeyBackward: (evt: KeyboardEvent) => evt.key === 'ArrowUp',
+                    escapeDeactivates: stopPropagation,
+                  }}
+                >
+                  <Menu variant="Surface" style={{ padding: config.space.S200, width: 'max-content' }}>
+                    <Box direction="Column" gap="100">
+                      <MenuItem size="300" radii="300" onClick={openStatusEditor}>
+                        <Box gap="200" grow="Yes" alignItems="Center">
+                          <Icon size="100" src={Icons.SmilePlus} />
+                          <Text as="span" size="T300" truncate>
+                            Custom Status
+                          </Text>
+                        </Box>
+                      </MenuItem>
+                      <MenuItem size="300" radii="300" onClick={openSettings}>
+                        <Box gap="200" grow="Yes" alignItems="Center">
+                          <Icon size="100" src={Icons.Setting} />
+                          <Text as="span" size="T300" truncate>
+                            User Settings
+                          </Text>
+                        </Box>
+                      </MenuItem>
+                    </Box>
+                  </Menu>
+                </FocusTrap>
+              }
+            >
+              <SidebarAvatar as="button" ref={triggerRef} onClick={openMenu}>
+                <UserAvatar
+                  userId={userId}
+                  src={avatarUrl}
+                  renderFallback={() => <Text size="H4">{nameInitials(displayName)}</Text>}
+                />
+              </SidebarAvatar>
+            </PopOut>
+            <StatusButton />
+          </div>
         )}
       </SidebarItemTooltip>
       {statusEditor && (
