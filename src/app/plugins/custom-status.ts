@@ -61,6 +61,12 @@ const TIME_SEPARATOR = ' · ';
 export const stripTimeSuffix = (text: string): string =>
   text.replace(TIME_SUFFIX_REGEX, '').trim();
 
+export const extractStatusTimeSuffix = (text?: string): string | undefined => {
+  if (!text) return undefined;
+  const match = text.match(TIME_SUFFIX_REGEX);
+  return match ? match[0].slice(TIME_SEPARATOR.length) : undefined;
+};
+
 export const formatStatusMsgWithTime = (emoji: string, text?: string): string => {
   const base = formatStatusMsg(emoji, text);
   const timeStr = new Date().toLocaleTimeString('en-GB', {

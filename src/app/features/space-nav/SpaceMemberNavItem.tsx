@@ -23,6 +23,8 @@ import {
 } from '../../utils/matrix';
 import { getMemberDisplayName } from '../../utils/room';
 import { useCustomStatus } from '../../hooks/useCustomStatus';
+import { useUserPresence } from '../../hooks/useUserPresence';
+import { PresenceStatus } from '../../components/presence';
 import { getSpaceRoomPath } from '../../pages/pathUtils';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
 import { roomToUnreadAtom } from '../../state/room/roomToUnread';
@@ -91,6 +93,7 @@ export function SpaceMemberNavItem({ member, space }: SpaceMemberNavItemProps) {
     getMxIdLocalPart(member.userId) ??
     member.userId;
   const status = useCustomStatus(member.userId);
+  const presence = useUserPresence(member.userId);
   const avatarMxcUrl = member.getMxcAvatarUrl();
   const avatarUrl = avatarMxcUrl
     ? mx.mxcUrlToHttp(avatarMxcUrl, 100, 100, 'crop', undefined, false, useAuthentication)
@@ -150,10 +153,18 @@ export function SpaceMemberNavItem({ member, space }: SpaceMemberNavItemProps) {
               </Text>
               {status?.emoji && <Text as="span" size="Inherit">{status.emoji}</Text>}
             </Box>
-            {status?.text && (
-              <Text as="span" size="T200" priority="300" truncate>
-                {status.text}
-              </Text>
+            {(status?.text || presence) && (
+              <Box as="span" alignItems="Center" gap="100">
+                {status?.text && (
+                  <Text as="span" size="T200" priority="300" truncate>
+                    {status.text}
+                  </Text>
+                )}
+                {status?.text && presence && (
+                  <Text as="span" size="T200" priority="400">•</Text>
+                )}
+                {presence && <PresenceStatus presence={presence} />}
+              </Box>
             )}
           </Box>
           {unread && unread.total > 0 && (

@@ -30,6 +30,12 @@ export const UserHeroAvatarContainer = style({
   position: 'relative',
   height: toRem(29),
 });
+export const UserHeroAction = style({
+  position: 'absolute',
+  right: config.space.S400,
+  top: 0,
+  transform: 'translateY(-50%)',
+});
 export const UserAvatarContainer = style({
   position: 'absolute',
   left: config.space.S400,

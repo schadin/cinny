@@ -32,7 +32,9 @@ import classNames from 'classnames';
 
 import * as css from './MembersDrawer.css';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
+import { useUserPresence } from '../../hooks/useUserPresence';
 import { useCustomStatus } from '../../hooks/useCustomStatus';
+import { PresenceStatus } from '../../components/presence';
 import { UseStateProvider } from '../../components/UseStateProvider';
 import {
   SearchItemStrGetter,
@@ -127,6 +129,7 @@ function MemberItem({
     ? mx.mxcUrlToHttp(avatarMxcUrl, 100, 100, 'crop', undefined, false, useAuthentication)
     : undefined;
   const status = useCustomStatus(member.userId);
+  const presence = useUserPresence(member.userId);
 
   return (
     <MenuItem
@@ -161,10 +164,20 @@ function MemberItem({
           </Text>
           {status?.emoji && <Text size="T400">{status.emoji}</Text>}
         </Box>
-        {status?.text && (
-          <Text size="T200" priority="300" truncate>
-            {status.text}
-          </Text>
+        {(status?.text || presence) && (
+          <Box alignItems="Center" gap="100">
+            {status?.text && (
+              <Text size="T200" priority="300" truncate>
+                {status.text}
+              </Text>
+            )}
+            {status?.text && presence && (
+              <Text size="T200" priority="400">
+                •
+              </Text>
+            )}
+            {presence && <PresenceStatus presence={presence} />}
+          </Box>
         )}
       </Box>
     </MenuItem>

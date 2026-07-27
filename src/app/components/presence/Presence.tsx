@@ -13,6 +13,7 @@ import {
 import React, { ReactNode, useId } from 'react';
 import * as css from './styles.css';
 import { Presence, usePresenceLabel } from '../../hooks/useUserPresence';
+import { getLastActiveLabel } from '../../utils/lastActive';
 
 const PresenceToColor: Record<Presence, MainColor> = {
   [Presence.Online]: 'Success',
@@ -22,12 +23,13 @@ const PresenceToColor: Record<Presence, MainColor> = {
 
 type PresenceBadgeProps = {
   presence: Presence;
-  status?: string;
+  lastActiveTs?: number;
   size?: '200' | '300' | '400' | '500';
 };
-export function PresenceBadge({ presence, status, size }: PresenceBadgeProps) {
+export function PresenceBadge({ presence, lastActiveTs, size }: PresenceBadgeProps) {
   const label = usePresenceLabel();
   const badgeLabelId = useId();
+  const lastActiveLabel = getLastActiveLabel(lastActiveTs);
 
   return (
     <TooltipProvider
@@ -39,8 +41,8 @@ export function PresenceBadge({ presence, status, size }: PresenceBadgeProps) {
         <Tooltip id={badgeLabelId}>
           <Box style={{ maxWidth: toRem(250) }} alignItems="Baseline" gap="100">
             <Text size="L400">{label[presence]}</Text>
-            {status && <Text size="T200">•</Text>}
-            {status && <Text size="T200">{status}</Text>}
+            {lastActiveLabel && <Text size="T200">•</Text>}
+            {lastActiveLabel && <Text size="T200">{lastActiveLabel}</Text>}
           </Box>
         </Tooltip>
       }

@@ -39,6 +39,8 @@ import { stopPropagation } from '../../utils/keyboard';
 import { getMatrixToRoom } from '../../plugins/matrix-to';
 import { getCanonicalAliasOrRoomId, guessDmRoomUserId, isRoomAlias } from '../../utils/matrix';
 import { useCustomStatus } from '../../hooks/useCustomStatus';
+import { useUserPresence } from '../../hooks/useUserPresence';
+import { PresenceStatus } from '../../components/presence';
 import { getViaServers } from '../../plugins/via-servers';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
 import { useSetting } from '../../state/hooks/settings';
@@ -268,6 +270,7 @@ export function RoomNavItem({
   const roomName = useRoomName(room);
   const dmUserId = direct ? guessDmRoomUserId(room, mx.getUserId()!) : undefined;
   const dmStatus = useCustomStatus(dmUserId ?? '');
+  const dmPresence = useUserPresence(dmUserId ?? '');
 
   const handleContextMenu: MouseEventHandler<HTMLElement> = (evt) => {
     evt.preventDefault();
@@ -371,10 +374,18 @@ export function RoomNavItem({
                   </Text>
                 )}
               </Box>
-              {direct && dmStatus?.text && (
-                <Text as="span" size="T200" priority="300" truncate>
-                  {dmStatus.text}
-                </Text>
+              {direct && (dmStatus?.text || dmPresence) && (
+                <Box as="span" alignItems="Center" gap="100">
+                  {dmStatus?.text && (
+                    <Text as="span" size="T200" priority="300" truncate>
+                      {dmStatus.text}
+                    </Text>
+                  )}
+                  {dmStatus?.text && dmPresence && (
+                    <Text as="span" size="T200" priority="400">•</Text>
+                  )}
+                  {dmPresence && <PresenceStatus presence={dmPresence} />}
+                </Box>
               )}
             </Box>
             {!optionsVisible && !unread && !selected && typingMember.length > 0 && (
