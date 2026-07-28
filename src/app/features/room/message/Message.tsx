@@ -63,6 +63,7 @@ import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useRecentEmoji } from '../../../hooks/useRecentEmoji';
 import * as css from './styles.css';
 import { EventReaders } from '../../../components/event-readers';
+import { MessageReadReceiptAvatars } from '../../../components/message-read-receipt';
 import { TextViewer } from '../../../components/text-viewer';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { EmojiBoard } from '../../../components/emoji-board';
@@ -676,6 +677,7 @@ export type MessageProps = {
   reply?: ReactNode;
   reactions?: ReactNode;
   hideReadReceipts?: boolean;
+  readReceiptUsers?: string[];
   showDeveloperTools?: boolean;
   memberPowerTag?: MemberPowerTag;
   accessibleTagColors?: Map<string, string>;
@@ -707,6 +709,7 @@ export const Message = as<'div', MessageProps>(
       reply,
       reactions,
       hideReadReceipts,
+      readReceiptUsers,
       showDeveloperTools,
       memberPowerTag,
       accessibleTagColors,
@@ -727,6 +730,7 @@ export const Message = as<'div', MessageProps>(
     const { focusWithinProps } = useFocusWithin({ onFocusWithinChange: setHover });
     const [menuAnchor, setMenuAnchor] = useState<RectCords>();
     const [emojiBoardAnchor, setEmojiBoardAnchor] = useState<RectCords>();
+    const [readReceiptDialogOpen, setReadReceiptDialogOpen] = useState(false);
 
     const senderDisplayName =
       getMemberDisplayName(room, senderId) ?? getMxIdLocalPart(senderId) ?? senderId;
@@ -813,8 +817,12 @@ export const Message = as<'div', MessageProps>(
       </AvatarBase>
     );
 
+    const filteredReceiptUsers = readReceiptUsers?.filter(
+      (userId) => userId !== senderId
+    );
+
     const msgContentJSX = (
-      <Box direction="Column" alignSelf="Start" style={{ maxWidth: '100%' }}>
+      <Box direction="Column" style={{ maxWidth: '100%' }}>
         {reply}
         {edit && onEditId ? (
           <MessageEditor
@@ -831,7 +839,12 @@ export const Message = as<'div', MessageProps>(
         ) : (
           children
         )}
-        {reactions}
+        {(reactions || (filteredReceiptUsers && filteredReceiptUsers.length > 0)) && (
+          <Box gap="200" alignItems="End" justifyContent="SpaceBetween" style={{ marginTop: config.space.S200, paddingRight: config.space.S200 }}>
+            <Box grow="Yes">{reactions}</Box>
+            <MessageReadReceiptAvatars room={room} userIds={filteredReceiptUsers} onClick={() => setReadReceiptDialogOpen(true)} />
+          </Box>
+        )}
       </Box>
     );
 
@@ -1144,6 +1157,28 @@ export const Message = as<'div', MessageProps>(
             {headerJSX}
             {msgContentJSX}
           </ModernLayout>
+        )}
+        {readReceiptDialogOpen && (
+          <Overlay open={readReceiptDialogOpen} backdrop={<OverlayBackdrop />}>
+            <OverlayCenter>
+              <FocusTrap
+                focusTrapOptions={{
+                  initialFocus: false,
+                  onDeactivate: () => setReadReceiptDialogOpen(false),
+                  clickOutsideDeactivates: true,
+                  escapeDeactivates: stopPropagation,
+                }}
+              >
+                <Modal variant="Surface" size="300">
+                  <EventReaders
+                    room={room}
+                    eventId={mEvent.getId() ?? ''}
+                    requestClose={() => setReadReceiptDialogOpen(false)}
+                  />
+                </Modal>
+              </FocusTrap>
+            </OverlayCenter>
+          </Overlay>
         )}
       </MessageBase>
     );

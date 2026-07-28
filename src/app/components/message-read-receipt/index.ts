@@ -1,0 +1,1 @@
+export { MessageReadReceiptAvatars } from './MessageReadReceiptAvatars';

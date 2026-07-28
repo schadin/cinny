@@ -49,6 +49,7 @@ import { Opts as LinkifyOpts } from 'linkifyjs';
 import { useTranslation } from 'react-i18next';
 import { eventWithShortcode, factoryEventSentBy, getMxIdLocalPart } from '../../utils/matrix';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
+import { useRoomReadReceipts } from '../../hooks/useRoomReadReceipts';
 import { useVirtualPaginator, ItemRange } from '../../hooks/useVirtualPaginator';
 import { useAlive } from '../../hooks/useAlive';
 import { editableActiveElement, scrollToBottom } from '../../utils/dom';
@@ -446,9 +447,12 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
   const showUrlPreview = room.hasEncryptionStateEvent() ? encUrlPreview : urlPreview;
   const [showHiddenEvents] = useSetting(settingsAtom, 'showHiddenEvents');
   const [showDeveloperTools] = useSetting(settingsAtom, 'developerTools');
+  const [showReadReceiptAvatars] = useSetting(settingsAtom, 'showReadReceiptAvatars');
 
   const [hour24Clock] = useSetting(settingsAtom, 'hour24Clock');
   const [dateFormatString] = useSetting(settingsAtom, 'dateFormatString');
+
+  const receiptsMap = useRoomReadReceipts(room);
 
   const ignoredUsersList = useIgnoredUsers();
   const ignoredUsersSet = useMemo(() => new Set(ignoredUsersList), [ignoredUsersList]);
@@ -1075,7 +1079,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             reactions={
               reactionRelations && (
                 <Reactions
-                  style={{ marginTop: config.space.S200 }}
+                  style={{ marginTop: undefined }}
                   room={room}
                   relations={reactionRelations}
                   mEventId={mEventId}
@@ -1085,6 +1089,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
               )
             }
             hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
             showDeveloperTools={showDeveloperTools}
             memberPowerTag={getMemberPowerTag(senderId)}
             accessibleTagColors={accessiblePowerTagColors}
@@ -1157,7 +1162,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             reactions={
               reactionRelations && (
                 <Reactions
-                  style={{ marginTop: config.space.S200 }}
+                  style={{ marginTop: undefined }}
                   room={room}
                   relations={reactionRelations}
                   mEventId={mEventId}
@@ -1167,6 +1172,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
               )
             }
             hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
             showDeveloperTools={showDeveloperTools}
             memberPowerTag={getMemberPowerTag(mEvent.getSender() ?? '')}
             accessibleTagColors={accessiblePowerTagColors}
@@ -1260,7 +1266,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             reactions={
               reactionRelations && (
                 <Reactions
-                  style={{ marginTop: config.space.S200 }}
+                  style={{ marginTop: undefined }}
                   room={room}
                   relations={reactionRelations}
                   mEventId={mEventId}
@@ -1270,6 +1276,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
               )
             }
             hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
             showDeveloperTools={showDeveloperTools}
             memberPowerTag={getMemberPowerTag(mEvent.getSender() ?? '')}
             accessibleTagColors={accessiblePowerTagColors}
@@ -1323,6 +1330,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
             showDeveloperTools={showDeveloperTools}
           >
             <EventContent
@@ -1365,6 +1373,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
             showDeveloperTools={showDeveloperTools}
           >
             <EventContent
@@ -1408,6 +1417,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
             showDeveloperTools={showDeveloperTools}
           >
             <EventContent
@@ -1451,6 +1461,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
             showDeveloperTools={showDeveloperTools}
           >
             <EventContent
@@ -1502,6 +1513,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
             messageSpacing={messageSpacing}
             canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
             hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
             showDeveloperTools={showDeveloperTools}
           >
             <EventContent
@@ -1547,6 +1559,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
           messageSpacing={messageSpacing}
           canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
           hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
           showDeveloperTools={showDeveloperTools}
         >
           <EventContent
@@ -1597,6 +1610,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
           messageSpacing={messageSpacing}
           canDelete={canRedact || mEvent.getSender() === mx.getUserId()}
           hideReadReceipts={hideActivity}
+            readReceiptUsers={!hideActivity && showReadReceiptAvatars ? receiptsMap.get(mEventId) : undefined}
           showDeveloperTools={showDeveloperTools}
         >
           <EventContent

@@ -55,3 +55,8 @@ export const ReactionsContainer = style({
 export const ReactionsTooltipText = style({
   wordBreak: 'break-word',
 });
+
+export const ReadReceiptContainer = style({
+  alignSelf: 'flex-end',
+  marginTop: config.space.S200,
+});

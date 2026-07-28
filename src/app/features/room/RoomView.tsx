@@ -59,6 +59,7 @@ export function RoomView({ eventId }: { eventId?: string }) {
   const roomViewRef = useRef<HTMLDivElement>(null);
 
   const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
+  const [showReadReceiptAvatars] = useSetting(settingsAtom, 'showReadReceiptAvatars');
 
   const room = useRoom();
   const { roomId } = room;
@@ -133,7 +134,7 @@ export function RoomView({ eventId }: { eventId?: string }) {
             </>
           )}
         </div>
-        {hideActivity ? <RoomViewFollowingPlaceholder /> : <RoomViewFollowing room={room} />}
+        {hideActivity || showReadReceiptAvatars ? <RoomViewFollowingPlaceholder /> : <RoomViewFollowing room={room} />}
       </Box>
     </Page>
   );

@@ -896,6 +896,10 @@ function Messages() {
   const [urlPreview, setUrlPreview] = useSetting(settingsAtom, 'urlPreview');
   const [encUrlPreview, setEncUrlPreview] = useSetting(settingsAtom, 'encUrlPreview');
   const [showHiddenEvents, setShowHiddenEvents] = useSetting(settingsAtom, 'showHiddenEvents');
+  const [showReadReceiptAvatars, setShowReadReceiptAvatars] = useSetting(
+    settingsAtom,
+    'showReadReceiptAvatars'
+  );
 
   return (
     <Box direction="Column" gap="100">
@@ -971,6 +975,19 @@ function Messages() {
           title="Show Hidden Events"
           after={
             <Switch variant="Primary" value={showHiddenEvents} onChange={setShowHiddenEvents} />
+          }
+        />
+      </SequenceCard>
+      <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
+        <SettingTile
+          title="Read Receipt Avatars"
+          description="Show small avatars on the last message each user has read."
+          after={
+            <Switch
+              variant="Primary"
+              value={showReadReceiptAvatars}
+              onChange={setShowReadReceiptAvatars}
+            />
           }
         />
       </SequenceCard>
