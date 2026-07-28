@@ -8,7 +8,8 @@ import LogoUnreadSVG from '../../../../public/res/svg/cinny-unread.svg';
 import LogoHighlightSVG from '../../../../public/res/svg/cinny-highlight.svg';
 import NotificationSound from '../../../../public/sound/notification.ogg';
 import InviteSound from '../../../../public/sound/invite.ogg';
-import { notificationPermission, setFavicon } from '../../utils/dom';
+import { setFavicon } from '../../utils/dom';
+import { showNotification } from '../../utils/notification';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { allInvitesAtom } from '../../state/room-list/inviteList';
@@ -88,17 +89,17 @@ function InviteNotifications() {
 
   const notify = useCallback(
     (count: number) => {
-      const noti = new window.Notification('Invitation', {
+      const noti = showNotification({
+        title: 'Invitation',
         icon: LogoSVG,
         badge: LogoSVG,
         body: `You have ${count} new invitation request.`,
         silent: true,
+        onClick: () => {
+          if (!window.closed) navigate(getInboxInvitesPath());
+          noti.close();
+        },
       });
-
-      noti.onclick = () => {
-        if (!window.closed) navigate(getInboxInvitesPath());
-        noti.close();
-      };
     },
     [navigate]
   );
@@ -110,7 +111,7 @@ function InviteNotifications() {
 
   useEffect(() => {
     if (invites.length > perviousInviteLen && mx.getSyncState() === 'SYNCING') {
-      if (showNotifications && notificationPermission('granted')) {
+      if (showNotifications) {
         notify(invites.length - perviousInviteLen);
       }
 
@@ -130,7 +131,7 @@ function InviteNotifications() {
 
 function MessageNotifications() {
   const audioRef = useRef<HTMLAudioElement>(null);
-  const notifRef = useRef<Notification>();
+  const notifRef = useRef<{ close: () => void }>();
   const unreadCacheRef = useRef<Map<string, UnreadInfo>>(new Map());
   const mx = useMatrixClient();
   const useAuthentication = useMediaAuthentication();
@@ -146,6 +147,7 @@ function MessageNotifications() {
       roomName,
       roomAvatar,
       username,
+      roomId,
     }: {
       roomName: string;
       roomAvatar?: string;
@@ -153,18 +155,19 @@ function MessageNotifications() {
       roomId: string;
       eventId: string;
     }) => {
-      const noti = new window.Notification(roomName, {
+      const noti = showNotification({
+        title: roomName,
         icon: roomAvatar,
         badge: roomAvatar,
         body: `New inbox notification from ${username}`,
         silent: true,
+        tag: roomId,
+        onClick: () => {
+          if (!window.closed) navigate(getInboxNotificationsPath());
+          noti.close();
+          notifRef.current = undefined;
+        },
       });
-
-      noti.onclick = () => {
-        if (!window.closed) navigate(getInboxNotificationsPath());
-        noti.close();
-        notifRef.current = undefined;
-      };
 
       notifRef.current?.close();
       notifRef.current = noti;
@@ -212,7 +215,7 @@ function MessageNotifications() {
         return;
       }
 
-      if (showNotifications && notificationPermission('granted')) {
+      if (showNotifications) {
         const avatarMxc =
           room.getAvatarFallbackMember()?.getMxcAvatarUrl() ?? room.getMxcAvatarUrl();
         notify({

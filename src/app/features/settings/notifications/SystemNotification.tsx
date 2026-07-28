@@ -6,7 +6,8 @@ import { SequenceCardStyle } from '../styles.css';
 import { SettingTile } from '../../../components/setting-tile';
 import { useSetting } from '../../../state/hooks/settings';
 import { settingsAtom } from '../../../state/settings';
-import { getNotificationState, usePermissionState } from '../../../hooks/usePermission';
+import { useNotificationPermission } from '../../../hooks/useNotificationPermission';
+import { isTauri } from '../../../utils/notification';
 import { useEmailNotifications } from '../../../hooks/useEmailNotifications';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
@@ -85,16 +86,41 @@ function EmailNotification() {
 }
 
 export function SystemNotification() {
-  const notifPermission = usePermissionState('notifications', getNotificationState());
+  const { state: notifPermission, loading, request: requestNotificationPermission } =
+    useNotificationPermission();
   const [showNotifications, setShowNotifications] = useSetting(settingsAtom, 'showNotifications');
   const [isNotificationSounds, setIsNotificationSounds] = useSetting(
     settingsAtom,
     'isNotificationSounds'
   );
 
-  const requestNotificationPermission = () => {
-    window.Notification.requestPermission();
-  };
+  let blockedDescription: string;
+  if ('Notification' in window) {
+    blockedDescription = isTauri()
+      ? 'Notification permission is blocked at the system level.'
+      : 'Notification permission is blocked. Please allow notification permission from browser address bar.';
+  } else {
+    blockedDescription = 'Notifications are not supported by the system.';
+  }
+
+  let permissionControl: React.ReactNode;
+  if (loading) {
+    permissionControl = <Spinner variant="Secondary" />;
+  } else if (notifPermission === 'prompt' || notifPermission === 'denied') {
+    permissionControl = (
+      <Button size="300" radii="300" onClick={requestNotificationPermission}>
+        <Text size="B300">Enable</Text>
+      </Button>
+    );
+  } else {
+    permissionControl = (
+      <Switch
+        disabled={notifPermission !== 'granted'}
+        value={showNotifications}
+        onChange={setShowNotifications}
+      />
+    );
+  }
 
   return (
     <Box direction="Column" gap="100">
@@ -110,27 +136,13 @@ export function SystemNotification() {
           description={
             notifPermission === 'denied' ? (
               <Text as="span" style={{ color: color.Critical.Main }} size="T200">
-                {'Notification' in window
-                  ? 'Notification permission is blocked. Please allow notification permission from browser address bar.'
-                  : 'Notifications are not supported by the system.'}
+                {blockedDescription}
               </Text>
             ) : (
               <span>Show desktop notifications when message arrive.</span>
             )
           }
-          after={
-            notifPermission === 'prompt' ? (
-              <Button size="300" radii="300" onClick={requestNotificationPermission}>
-                <Text size="B300">Enable</Text>
-              </Button>
-            ) : (
-              <Switch
-                disabled={notifPermission !== 'granted'}
-                value={showNotifications}
-                onChange={setShowNotifications}
-              />
-            )
-          }
+          after={permissionControl}
         />
       </SequenceCard>
       <SequenceCard
