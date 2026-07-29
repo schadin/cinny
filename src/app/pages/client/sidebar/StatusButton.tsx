@@ -17,8 +17,11 @@ import { useCustomStatus } from '../../../hooks/useCustomStatus';
 import {
   DEFAULT_STATUS_PRESETS,
   setCustomStatusWithTime,
+  StatusPreset,
   stripTimeSuffix,
 } from '../../../plugins/custom-status';
+import { useSetting } from '../../../state/hooks/settings';
+import { settingsAtom } from '../../../state/settings';
 import { stopPropagation } from '../../../utils/keyboard';
 
 export function StatusButton() {
@@ -28,6 +31,9 @@ export function StatusButton() {
   const currentEmoji = currentStatus?.emoji ?? '';
   const currentText = currentStatus?.text ?? '';
   const hasStatus = !!currentEmoji;
+
+  const [customPresets] = useSetting(settingsAtom, 'statusPresets');
+  const presets: StatusPreset[] = [...DEFAULT_STATUS_PRESETS, ...customPresets];
 
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
 
@@ -71,9 +77,9 @@ export function StatusButton() {
           >
             <Menu variant="Surface" style={{ padding: config.space.S200, width: 'max-content' }}>
               <Box direction="Column" gap="100">
-                {DEFAULT_STATUS_PRESETS.map((preset, idx) => (
+                {presets.map((preset, idx) => (
                   <MenuItem
-                    key={`${preset.emoji}-${idx}`}
+                    key={`${preset.emoji}-${preset.text}-${idx}`}
                     size="300"
                     radii="300"
                     onClick={() => handleSelect(preset.emoji, preset.text)}
