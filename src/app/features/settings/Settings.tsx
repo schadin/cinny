@@ -19,6 +19,7 @@ import { General } from './general';
 import { PageNav, PageNavContent, PageNavHeader, PageRoot } from '../../components/page';
 import { ScreenSize, useScreenSizeContext } from '../../hooks/useScreenSize';
 import { Account } from './account';
+import { Status } from './status';
 import { useUserProfile } from '../../hooks/useUserProfile';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { getMxIdLocalPart, mxcUrlToHttp } from '../../utils/matrix';
@@ -37,6 +38,7 @@ import { LogoutDialog } from '../../components/LogoutDialog';
 export enum SettingsPages {
   GeneralPage,
   AccountPage,
+  StatusPage,
   NotificationPage,
   DevicesPage,
   EmojisStickersPage,
@@ -62,6 +64,11 @@ const useSettingsMenuItems = (): SettingsMenuItem[] =>
         page: SettingsPages.AccountPage,
         name: 'Account',
         icon: Icons.User,
+      },
+      {
+        page: SettingsPages.StatusPage,
+        name: 'Status',
+        icon: Icons.Heart,
       },
       {
         page: SettingsPages.NotificationPage,
@@ -215,6 +222,9 @@ export function Settings({ initialPage, requestClose }: SettingsProps) {
       )}
       {activePage === SettingsPages.AccountPage && (
         <Account requestClose={handlePageRequestClose} />
+      )}
+      {activePage === SettingsPages.StatusPage && (
+        <Status requestClose={handlePageRequestClose} />
       )}
       {activePage === SettingsPages.NotificationPage && (
         <Notifications requestClose={handlePageRequestClose} />

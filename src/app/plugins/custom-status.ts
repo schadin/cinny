@@ -12,9 +12,9 @@ export type StatusPreset = {
 
 export const DEFAULT_STATUS_PRESETS: StatusPreset[] = [
   { emoji: '🟢', text: 'На месте' },
-  { emoji: '🟡', text: 'Отошел' },
-  { emoji: '🟡', text: 'На обеде' },
-  { emoji: '🔴', text: 'Ушел' },
+  { emoji: '🙅‍♂️', text: 'Отошел' },
+  { emoji: '🍴', text: 'Обед' },
+  { emoji: '🏁', text: 'Ушел' },
 ];
 
 const EMOJI_REGEX = /\p{Extended_Pictographic}/u;

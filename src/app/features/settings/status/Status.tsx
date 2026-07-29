@@ -1,22 +1,19 @@
 import React from 'react';
 import { Box, Text, IconButton, Icon, Icons, Scroll } from 'folds';
 import { Page, PageContent, PageHeader } from '../../../components/page';
-import { MatrixId } from './MatrixId';
-import { Profile } from './Profile';
-import { ContactInformation } from './ContactInfo';
-import { IgnoredUserList } from './IgnoredUserList';
+import { ProfileStatus } from '../account/ProfileStatus';
 
-type AccountProps = {
+type StatusProps = {
   requestClose: () => void;
 };
-export function Account({ requestClose }: AccountProps) {
+export function Status({ requestClose }: StatusProps) {
   return (
     <Page>
       <PageHeader outlined={false}>
         <Box grow="Yes" gap="200">
           <Box grow="Yes" alignItems="Center" gap="200">
             <Text size="H3" truncate>
-              Account
+              Status
             </Text>
           </Box>
           <Box shrink="No">
@@ -30,10 +27,7 @@ export function Account({ requestClose }: AccountProps) {
         <Scroll hideTrack visibility="Hover">
           <PageContent>
             <Box direction="Column" gap="700">
-              <Profile />
-              <MatrixId />
-              <ContactInformation />
-              <IgnoredUserList />
+              <ProfileStatus />
             </Box>
           </PageContent>
         </Scroll>
