@@ -1,4 +1,4 @@
-import { BasePoint, BaseRange, Editor, Element, Point, Range, Text, Transforms } from 'slate';
+import { BasePoint, BaseRange, Editor, Element, Path, Point, Range, Text, Transforms } from 'slate';
 import { BlockType, MarkType } from './types';
 import {
   CommandElement,
@@ -231,6 +231,7 @@ export const getPointUntilChar = (
   // eslint-disable-next-line no-restricted-syntax
   for (const point of pointItr) {
     if (!Point.equals(point, cursorPoint) && prevPoint) {
+      if (!Path.equals(point.path, prevPoint.path)) break;
       char = Editor.string(editor, { anchor: point, focus: prevPoint });
 
       if (options.match(char)) break;
