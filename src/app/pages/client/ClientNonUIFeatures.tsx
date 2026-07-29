@@ -9,7 +9,7 @@ import LogoHighlightSVG from '../../../../public/res/svg/cinny-highlight.svg';
 import NotificationSound from '../../../../public/sound/notification.ogg';
 import InviteSound from '../../../../public/sound/invite.ogg';
 import { setFavicon } from '../../utils/dom';
-import { showNotification } from '../../utils/notification';
+import { extractMessagePreview, showNotification } from '../../utils/notification';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { allInvitesAtom } from '../../state/room-list/inviteList';
@@ -148,18 +148,20 @@ function MessageNotifications() {
       roomAvatar,
       username,
       roomId,
+      messagePreview,
     }: {
       roomName: string;
       roomAvatar?: string;
       username: string;
       roomId: string;
       eventId: string;
+      messagePreview: string;
     }) => {
       const noti = showNotification({
         title: roomName,
         icon: roomAvatar,
         badge: roomAvatar,
-        body: `New inbox notification from ${username}`,
+        body: `${username}: ${messagePreview}`,
         silent: true,
         tag: roomId,
         onClick: () => {
@@ -226,6 +228,7 @@ function MessageNotifications() {
           username: getMemberDisplayName(room, sender) ?? getMxIdLocalPart(sender) ?? sender,
           roomId: room.roomId,
           eventId,
+          messagePreview: extractMessagePreview(mEvent),
         });
       }
 

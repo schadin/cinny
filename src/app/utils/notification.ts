@@ -1,3 +1,4 @@
+import { MatrixEvent, MsgType } from 'matrix-js-sdk';
 import {
   isPermissionGranted,
   requestPermission,
@@ -54,6 +55,12 @@ export type ShowNotificationOptions = {
   onClick?: () => void;
 };
 
+function truncate(str: string, max: number): string {
+  const cleaned = str.replace(/\s+/g, ' ').trim();
+  if (cleaned.length <= max) return cleaned;
+  return `${cleaned.slice(0, max).trimEnd()}…`;
+}
+
 function hashStringToInt(str: string): number {
   let hash = 0;
   for (let i = 0; i < str.length; i += 1) {
@@ -64,6 +71,32 @@ function hashStringToInt(str: string): number {
     hash |= 0;
   }
   return Math.abs(hash) % 2147483647;
+}
+
+export function extractMessagePreview(mEvent: MatrixEvent): string {
+  const content = mEvent.getContent();
+  const msgtype = content?.msgtype;
+  const body = content?.body;
+
+  if (mEvent.isRedacted()) return 'Message deleted';
+
+  if (msgtype === MsgType.Text || msgtype === MsgType.Notice) {
+    return body ? truncate(body, 100) : 'Sent a message';
+  }
+
+  if (msgtype === MsgType.Emote) {
+    return body ? truncate(`* ${body}`, 100) : 'Sent an emote';
+  }
+
+  if (msgtype === MsgType.Image) return 'Sent an image';
+  if (msgtype === MsgType.Video) return 'Sent a video';
+  if (msgtype === MsgType.Audio) return 'Sent an audio';
+  if (msgtype === MsgType.File) return 'Sent a file';
+  if (msgtype === MsgType.Location) return 'Sent a location';
+
+  if (msgtype === 'm.bad.encrypted') return 'Sent an encrypted message';
+
+  return body ? truncate(body, 100) : 'Sent a message';
 }
 
 export function showNotification(
