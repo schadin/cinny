@@ -16,6 +16,7 @@ import {
   RectCords,
   Badge,
   Spinner,
+  color,
 } from 'folds';
 import { useFocusWithin, useHover } from 'react-aria';
 import FocusTrap from 'focus-trap-react';
@@ -55,6 +56,8 @@ import { RoomNotificationModeSwitcher } from '../../components/RoomNotificationS
 import { getRoomCreatorsForRoomId, useRoomCreators } from '../../hooks/useRoomCreators';
 import { getRoomPermissionsAPI, useRoomPermissions } from '../../hooks/useRoomPermissions';
 import { InviteUserPrompt } from '../../components/invite-user-prompt';
+import { useRoomInputDraftsAtoms } from '../../state/room/roomInputDraftsContext';
+import { roomIdToUploadItemsAtomFamily } from '../../state/room/roomInputDrafts';
 import { useRoomName } from '../../hooks/useRoomMeta';
 import { useCallMembers, useCallSession } from '../../hooks/useCall';
 import { useCallEmbed, useCallStart } from '../../hooks/useCallEmbed';
@@ -292,6 +295,12 @@ export function RoomNavItem({
   const startCall = useCallStart(direct);
   const callEmbed = useCallEmbed();
   const callPref = useAtomValue(useCallPreferencesAtom());
+
+  const { msgDraft: msgDraftFamily, replyDraft: replyDraftFamily } = useRoomInputDraftsAtoms();
+  const msgDraft = useAtomValue(msgDraftFamily(room.roomId));
+  const replyDraftVal = useAtomValue(replyDraftFamily(room.roomId));
+  const uploadItems = useAtomValue(roomIdToUploadItemsAtomFamily(room.roomId));
+  const hasDraft = (msgDraft && msgDraft.length > 0) || !!replyDraftVal || uploadItems.length > 0;
   const autoDiscoveryInfo = useAutoDiscoveryInfo();
 
   const handleStartCall: MouseEventHandler<HTMLAnchorElement> = (evt) => {
@@ -404,6 +413,9 @@ export function RoomNavItem({
                 src={getRoomNotificationModeIcon(notificationMode)}
                 aria-label={notificationMode}
               />
+            )}
+            {!optionsVisible && !selected && hasDraft && (
+              <Icon size="50" src={Icons.Pencil} fill={color.Critical.OnContainer} aria-label="Draft" />
             )}
             {callMembers.length > 0 && (
               <Badge variant="Critical" fill="Solid" size="400">

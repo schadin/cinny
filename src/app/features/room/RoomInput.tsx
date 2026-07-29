@@ -67,11 +67,11 @@ import { useTypingStatusUpdater } from '../../hooks/useTypingStatusUpdater';
 import { useFilePicker } from '../../hooks/useFilePicker';
 import { useFilePasteHandler } from '../../hooks/useFilePasteHandler';
 import { useFileDropZone } from '../../hooks/useFileDrop';
+import { useGoBack } from '../../components/BackRouteHandler';
+import { useRoomInputDraftsAtoms } from '../../state/room/roomInputDraftsContext';
 import {
   TUploadItem,
   TUploadMetadata,
-  roomIdToMsgDraftAtomFamily,
-  roomIdToReplyDraftAtomFamily,
   roomIdToUploadItemsAtomFamily,
   roomUploadAtomFamily,
 } from '../../state/room/roomInputDrafts';
@@ -139,8 +139,9 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
     const powerLevels = usePowerLevelsContext();
     const creators = useRoomCreators(room);
 
-    const [msgDraft, setMsgDraft] = useAtom(roomIdToMsgDraftAtomFamily(roomId));
-    const [replyDraft, setReplyDraft] = useAtom(roomIdToReplyDraftAtomFamily(roomId));
+    const { msgDraft: msgDraftFamily, replyDraft: replyDraftFamily } = useRoomInputDraftsAtoms();
+    const [msgDraft, setMsgDraft] = useAtom(msgDraftFamily(roomId));
+    const [replyDraft, setReplyDraft] = useAtom(replyDraftFamily(roomId));
     const replyUserID = replyDraft?.userId;
 
     const powerLevelTags = usePowerLevelTags(room, powerLevels);
@@ -379,6 +380,8 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
       sendTypingStatus(false);
     }, [mx, roomId, editor, replyDraft, sendTypingStatus, setReplyDraft, isMarkdown, commands]);
 
+    const goBack = useGoBack();
+
     const handleKeyDown: KeyboardEventHandler = useCallback(
       (evt) => {
         if (
@@ -394,10 +397,14 @@ export const RoomInput = forwardRef<HTMLDivElement, RoomInputProps>(
             setAutocompleteQuery(undefined);
             return;
           }
-          setReplyDraft(undefined);
+          if (replyDraft) {
+            setReplyDraft(undefined);
+            return;
+          }
+          goBack();
         }
       },
-      [submit, setReplyDraft, enterForNewline, autocompleteQuery, isComposing]
+      [submit, replyDraft, setReplyDraft, enterForNewline, autocompleteQuery, isComposing, goBack]
     );
 
     const handleKeyUp: KeyboardEventHandler = useCallback(

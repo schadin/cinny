@@ -101,7 +101,7 @@ import { getResizeObserverEntry, useResizeObserver } from '../../hooks/useResize
 import * as css from './RoomTimeline.css';
 import { inSameDay, minuteDifference, timeDayMonthYear, today, yesterday } from '../../utils/time';
 import { createMentionElement, isEmptyEditor, moveCursor } from '../../components/editor';
-import { roomIdToReplyDraftAtomFamily } from '../../state/room/roomInputDrafts';
+import { useRoomInputDraftsAtoms } from '../../state/room/roomInputDraftsContext';
 import { usePowerLevelsContext } from '../../hooks/usePowerLevels';
 import { GetContentCallback, MessageEvent, StateEvent } from '../../../types/matrix/room';
 import { useKeyDown } from '../../hooks/useKeyDown';
@@ -457,7 +457,8 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
   const ignoredUsersList = useIgnoredUsers();
   const ignoredUsersSet = useMemo(() => new Set(ignoredUsersList), [ignoredUsersList]);
 
-  const setReplyDraft = useSetAtom(roomIdToReplyDraftAtomFamily(room.roomId));
+  const { replyDraft: replyDraftFamily } = useRoomInputDraftsAtoms();
+  const setReplyDraft = useSetAtom(replyDraftFamily(room.roomId));
   const powerLevels = usePowerLevelsContext();
   const creators = useRoomCreators(room);
 

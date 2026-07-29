@@ -10,6 +10,7 @@ import { makeOpenedSidebarFolderAtom } from '../../state/openedSidebarFolder';
 import { OpenedSidebarFolderProvider } from '../../state/hooks/openedSidebarFolder';
 import { makeCallPreferencesAtom } from '../../state/callPreferences';
 import { CallPreferencesProvider } from '../../state/hooks/callPreferences';
+import { RoomInputDraftsProvider } from '../../state/room/roomInputDraftsContext';
 
 type ClientInitStorageAtomProps = {
   children: ReactNode;
@@ -34,7 +35,9 @@ export function ClientInitStorageAtom({ children }: ClientInitStorageAtomProps) 
         <NavToActivePathProvider value={navToActivePathAtom}>
           <OpenedSidebarFolderProvider value={openedSidebarFolderAtom}>
             <CallPreferencesProvider value={callPreferencesAtom}>
-              {children}
+              <RoomInputDraftsProvider>
+                {children}
+              </RoomInputDraftsProvider>
             </CallPreferencesProvider>
           </OpenedSidebarFolderProvider>
         </NavToActivePathProvider>

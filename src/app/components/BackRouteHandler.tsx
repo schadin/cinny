@@ -9,14 +9,11 @@ import {
 } from '../pages/pathUtils';
 import { DIRECT_PATH, EXPLORE_PATH, HOME_PATH, INBOX_PATH, SPACE_PATH } from '../pages/paths';
 
-type BackRouteHandlerProps = {
-  children: (onBack: () => void) => ReactNode;
-};
-export function BackRouteHandler({ children }: BackRouteHandlerProps) {
+export function useGoBack() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const goBack = useCallback(() => {
+  return useCallback(() => {
     if (
       matchPath(
         {
@@ -85,6 +82,12 @@ export function BackRouteHandler({ children }: BackRouteHandlerProps) {
       navigate(getInboxPath());
     }
   }, [navigate, location]);
+}
 
+type BackRouteHandlerProps = {
+  children: (onBack: () => void) => ReactNode;
+};
+export function BackRouteHandler({ children }: BackRouteHandlerProps) {
+  const goBack = useGoBack();
   return children(goBack);
 }

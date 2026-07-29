@@ -10,6 +10,7 @@ import {
   Icons,
   Spinner,
   Text,
+  color,
 } from 'folds';
 import { useFocusWithin, useHover } from 'react-aria';
 import { NavItem, NavItemContent } from '../../components/nav';
@@ -32,6 +33,8 @@ import { mDirectAtom } from '../../state/mDirectList';
 import { allRoomsAtom } from '../../state/room-list/roomList';
 import { UnreadBadge, UnreadBadgeCenter } from '../../components/unread-badge';
 import { useAlive } from '../../hooks/useAlive';
+import { useRoomInputDraftsAtoms } from '../../state/room/roomInputDraftsContext';
+import { roomIdToUploadItemsAtomFamily } from '../../state/room/roomInputDrafts';
 import { AsyncStatus, useAsyncCallback } from '../../hooks/useAsyncCallback';
 
 type SpaceMemberNavItemProps = {
@@ -60,6 +63,20 @@ export function SpaceMemberNavItem({ member, space }: SpaceMemberNavItemProps) {
   }, [mx, member.userId, mDirects, allRooms]);
 
   const unread = existingDM ? roomToUnread.get(existingDM.roomId) : undefined;
+
+  const { msgDraft: msgDraftFamily, replyDraft: replyDraftFamily } = useRoomInputDraftsAtoms();
+  const dmRoomId = existingDM?.roomId;
+  const msgDraft = useAtomValue(
+    useMemo(() => dmRoomId ? msgDraftFamily(dmRoomId) : msgDraftFamily('__draft_check_none__'), [dmRoomId, msgDraftFamily])
+  );
+  const replyDraftVal = useAtomValue(
+    useMemo(() => dmRoomId ? replyDraftFamily(dmRoomId) : replyDraftFamily('__draft_check_none__'), [dmRoomId, replyDraftFamily])
+  );
+  const uploadItems = useAtomValue(
+    useMemo(() => dmRoomId ? roomIdToUploadItemsAtomFamily(dmRoomId) : roomIdToUploadItemsAtomFamily('__draft_check_none__'), [dmRoomId])
+  );
+
+  const hasDraft = dmRoomId && ((msgDraft && msgDraft.length > 0) || !!replyDraftVal || uploadItems.length > 0);
 
   const [hover, setHover] = useState(false);
   const { hoverProps } = useHover({ onHoverChange: setHover });
@@ -171,6 +188,9 @@ export function SpaceMemberNavItem({ member, space }: SpaceMemberNavItemProps) {
             <UnreadBadgeCenter>
               <UnreadBadge highlight={unread.highlight > 0} count={unread.total} />
             </UnreadBadgeCenter>
+          )}
+          {!hover && hasDraft && (
+            <Icon size="50" src={Icons.Pencil} fill={color.Critical.OnContainer} />
           )}
           {loading && <Spinner size="100" variant="Secondary" />}
         </Box>
