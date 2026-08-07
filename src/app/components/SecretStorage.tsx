@@ -12,12 +12,14 @@ import { useAlive } from '../hooks/useAlive';
 
 type SecretStorageRecoveryPassphraseProps = {
   processing?: boolean;
+  buttonLabel?: string;
   keyContent: SecretStorageKeyContent;
   passphraseContent: SecretStoragePassphraseContent;
   onDecodedRecoveryKey: (recoveryKey: Uint8Array) => void;
 };
 export function SecretStorageRecoveryPassphrase({
   processing,
+  buttonLabel,
   keyContent,
   passphraseContent,
   onDecodedRecoveryKey,
@@ -99,7 +101,7 @@ export function SecretStorageRecoveryPassphrase({
             before={loading && <Spinner size="200" variant="Success" fill="Solid" />}
           >
             <Text as="span" size="B400">
-              Verify
+              {buttonLabel ?? 'Verify'}
             </Text>
           </Button>
         </Box>
@@ -115,11 +117,13 @@ export function SecretStorageRecoveryPassphrase({
 
 type SecretStorageRecoveryKeyProps = {
   processing?: boolean;
+  buttonLabel?: string;
   keyContent: SecretStorageKeyContent;
   onDecodedRecoveryKey: (recoveryKey: Uint8Array) => void;
 };
 export function SecretStorageRecoveryKey({
   processing,
+  buttonLabel,
   keyContent,
   onDecodedRecoveryKey,
 }: SecretStorageRecoveryKeyProps) {
@@ -189,7 +193,7 @@ export function SecretStorageRecoveryKey({
             before={loading && <Spinner size="200" variant="Success" fill="Solid" />}
           >
             <Text as="span" size="B400">
-              Verify
+              {buttonLabel ?? 'Verify'}
             </Text>
           </Button>
         </Box>

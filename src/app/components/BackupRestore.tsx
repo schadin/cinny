@@ -1,6 +1,6 @@
 import React, { MouseEventHandler, useCallback, useState } from 'react';
 import { useAtom } from 'jotai';
-import { CryptoApi, KeyBackupInfo } from 'matrix-js-sdk/lib/crypto-api';
+import { CryptoApi, ImportRoomKeyProgressData, KeyBackupInfo } from 'matrix-js-sdk/lib/crypto-api';
 import {
   Badge,
   Box,
@@ -30,6 +30,13 @@ import {
 } from '../hooks/useKeyBackup';
 import { stopPropagation } from '../utils/keyboard';
 import { useRestoreBackupOnVerification } from '../hooks/useRestoreBackupOnVerification';
+import { SecretStorageRecoveryKey, SecretStorageRecoveryPassphrase } from './SecretStorage';
+import {
+  useSecretStorageDefaultKeyId,
+  useSecretStorageKeyContent,
+} from '../hooks/useSecretStorage';
+import { storePrivateKey } from '../../client/secretStorageKeys';
+import { ManualVerificationMethod, ManualVerificationMethodSwitcher } from './ManualVerification';
 
 type BackupStatusProps = {
   enabled: boolean;
@@ -144,7 +151,20 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
   const backupInfo = useKeyBackupInfo(crypto);
   const [remainingSession, syncFailure] = useKeyBackupSync();
 
+  const defaultSecretStorageKeyId = useSecretStorageDefaultKeyId();
+  const defaultSecretStorageKeyContent = useSecretStorageKeyContent(
+    defaultSecretStorageKeyId ?? ''
+  );
+  const hasPassphrase = !!defaultSecretStorageKeyContent?.passphrase;
+  const secretStorageReady = !!defaultSecretStorageKeyId && !!defaultSecretStorageKeyContent;
+
   const [menuCords, setMenuCords] = useState<RectCords>();
+  const [connectMode, setConnectMode] = useState(false);
+  const [connectMethod, setConnectMethod] = useState<ManualVerificationMethod>(
+    hasPassphrase
+      ? ManualVerificationMethod.RecoveryPassphrase
+      : ManualVerificationMethod.RecoveryKey
+  );
 
   const handleMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
     setMenuCords(evt.currentTarget.getBoundingClientRect());
@@ -153,7 +173,7 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
   const [restoreState, restoreBackup] = useAsyncCallback<void, Error, []>(
     useCallback(async () => {
       await crypto.restoreKeyBackup({
-        progressCallback(progress) {
+        progressCallback(progress: ImportRoomKeyProgressData) {
           setRestoreProgress(progress);
         },
       });
@@ -164,6 +184,45 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
     setMenuCords(undefined);
     restoreBackup();
   };
+
+  const [createState, createBackup] = useAsyncCallback<void, Error, []>(
+    useCallback(async () => {
+      await crypto.resetKeyBackup();
+    }, [crypto])
+  );
+
+  const [connectState, connectBackup] = useAsyncCallback<void, Error, [Uint8Array]>(
+    useCallback(
+      async (recoveryKey) => {
+        if (!defaultSecretStorageKeyId) {
+          throw new Error('No secret storage key configured.');
+        }
+        storePrivateKey(defaultSecretStorageKeyId, recoveryKey);
+        await crypto.loadSessionBackupPrivateKeyFromSecretStorage();
+        await crypto.checkKeyBackupAndEnable();
+      },
+      [crypto, defaultSecretStorageKeyId]
+    )
+  );
+
+  const handleCreateWithKey = useCallback(
+    (recoveryKey: Uint8Array) => {
+      if (!defaultSecretStorageKeyId) return;
+      storePrivateKey(defaultSecretStorageKeyId, recoveryKey);
+      createBackup();
+    },
+    [createBackup, defaultSecretStorageKeyId]
+  );
+
+  const handleConnectWithKey = useCallback(
+    (recoveryKey: Uint8Array) => {
+      connectBackup(recoveryKey);
+    },
+    [connectBackup]
+  );
+
+  const connecting = connectState.status === AsyncStatus.Loading;
+  const creating = createState.status === AsyncStatus.Loading;
 
   return (
     <InfoCard
@@ -176,15 +235,17 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
           ) : (
             <BackupSyncing count={remainingSession} />
           )}
-          <IconButton
-            aria-pressed={!!menuCords}
-            size="300"
-            variant="Surface"
-            radii="300"
-            onClick={handleMenu}
-          >
-            <Icon size="100" src={Icons.VerticalDots} />
-          </IconButton>
+          {backupEnabled && (
+            <IconButton
+              aria-pressed={!!menuCords}
+              size="300"
+              variant="Surface"
+              radii="300"
+              onClick={handleMenu}
+            >
+              <Icon size="100" src={Icons.VerticalDots} />
+            </IconButton>
+          )}
           <PopOut
             anchor={menuCords}
             offset={5}
@@ -249,12 +310,98 @@ export function BackupRestoreTile({ crypto }: BackupRestoreTileProps) {
           <b>{syncFailure}</b>
         </Text>
       )}
+
       {!backupEnabled && backupInfo === null && (
-        <Text size="T200" style={{ color: color.Critical.Main }}>
-          <b>No backup present on server!</b>
-        </Text>
+        <Box direction="Column" gap="200">
+          <Text size="T200" style={{ color: color.Critical.Main }}>
+            <b>No backup present on server!</b>
+          </Text>
+          {!secretStorageReady ? (
+            <Text size="T200">
+              Set up device verification first to create an encryption backup.
+            </Text>
+          ) : (
+            <>
+              <Text size="T200">
+                Create a server-side backup so your keys can be restored on this and other devices.
+              </Text>
+              <ManualVerificationMethodSwitcher value={connectMethod} onChange={setConnectMethod} />
+              {connectMethod === ManualVerificationMethod.RecoveryKey ? (
+                <SecretStorageRecoveryKey
+                  processing={creating}
+                  buttonLabel="Create Backup"
+                  keyContent={defaultSecretStorageKeyContent}
+                  onDecodedRecoveryKey={handleCreateWithKey}
+                />
+              ) : (
+                defaultSecretStorageKeyContent.passphrase && (
+                  <SecretStorageRecoveryPassphrase
+                    processing={creating}
+                    buttonLabel="Create Backup"
+                    keyContent={defaultSecretStorageKeyContent}
+                    passphraseContent={defaultSecretStorageKeyContent.passphrase}
+                    onDecodedRecoveryKey={handleCreateWithKey}
+                  />
+                )
+              )}
+              {createState.status === AsyncStatus.Error && (
+                <Text size="T200" style={{ color: color.Critical.Main }}>
+                  <b>{createState.error.message}</b>
+                </Text>
+              )}
+            </>
+          )}
+        </Box>
       )}
-      {!syncFailure && !backupEnabled && backupInfo && (
+
+      {!backupEnabled && backupInfo && !connectMode && (
+        <Box direction="Column" gap="200">
+          <Text size="T200" style={{ color: color.Warning.Main }}>
+            <b>Backup available but not connected on this device.</b>
+          </Text>
+          {secretStorageReady ? (
+            <Button size="300" variant="Primary" radii="300" onClick={() => setConnectMode(true)}>
+              <Text size="B300">Connect Backup</Text>
+            </Button>
+          ) : (
+            <Text size="T200">Verify this device to connect the encryption backup.</Text>
+          )}
+        </Box>
+      )}
+
+      {!backupEnabled && backupInfo && connectMode && secretStorageReady && (
+        <Box direction="Column" gap="200">
+          <Text size="T200">
+            Enter your recovery key or passphrase to connect this device to the backup.
+          </Text>
+          <ManualVerificationMethodSwitcher value={connectMethod} onChange={setConnectMethod} />
+          {connectMethod === ManualVerificationMethod.RecoveryKey ? (
+            <SecretStorageRecoveryKey
+              processing={connecting}
+              buttonLabel="Connect Backup"
+              keyContent={defaultSecretStorageKeyContent}
+              onDecodedRecoveryKey={handleConnectWithKey}
+            />
+          ) : (
+            defaultSecretStorageKeyContent.passphrase && (
+              <SecretStorageRecoveryPassphrase
+                processing={connecting}
+                buttonLabel="Connect Backup"
+                keyContent={defaultSecretStorageKeyContent}
+                passphraseContent={defaultSecretStorageKeyContent.passphrase}
+                onDecodedRecoveryKey={handleConnectWithKey}
+              />
+            )
+          )}
+          {connectState.status === AsyncStatus.Error && (
+            <Text size="T200" style={{ color: color.Critical.Main }}>
+              <b>{connectState.error.message}</b>
+            </Text>
+          )}
+        </Box>
+      )}
+
+      {!syncFailure && backupEnabled && backupInfo && (
         <BackupTrustInfo crypto={crypto} backupInfo={backupInfo} />
       )}
       {restoreState.status === AsyncStatus.Loading && !restoring && <BackupProgressFetching />}

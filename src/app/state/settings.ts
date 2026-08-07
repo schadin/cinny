@@ -52,6 +52,10 @@ export interface Settings {
 
   developerTools: boolean;
   statusPresets: StatusPreset[];
+
+  showTrayIcon: boolean;
+  startMinimized: boolean;
+  minimizeOnClose: boolean;
 }
 
 const defaultSettings: Settings = {
@@ -90,6 +94,10 @@ const defaultSettings: Settings = {
 
   developerTools: false,
   statusPresets: [],
+
+  showTrayIcon: false,
+  startMinimized: false,
+  minimizeOnClose: false,
 };
 
 export const getSettings = () => {
