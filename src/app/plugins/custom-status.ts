@@ -58,8 +58,22 @@ export const formatStatusMsg = (emoji: string, text?: string): string => {
 const TIME_SUFFIX_REGEX = / · \d{2}:\d{2}$/;
 const TIME_SEPARATOR = ' · ';
 
-export const stripTimeSuffix = (text: string): string =>
-  text.replace(TIME_SUFFIX_REGEX, '').trim();
+const ACTIVE_STATUS_STORAGE_KEY = 'cinny_active_status_msg';
+
+export const saveActiveStatusMsg = (statusMsg: string | undefined): void => {
+  if (statusMsg === undefined || statusMsg === '') {
+    localStorage.removeItem(ACTIVE_STATUS_STORAGE_KEY);
+  } else {
+    localStorage.setItem(ACTIVE_STATUS_STORAGE_KEY, statusMsg);
+  }
+};
+
+export const getActiveStatusMsg = (): string | undefined => {
+  const value = localStorage.getItem(ACTIVE_STATUS_STORAGE_KEY);
+  return value || undefined;
+};
+
+export const stripTimeSuffix = (text: string): string => text.replace(TIME_SUFFIX_REGEX, '').trim();
 
 export const extractStatusTimeSuffix = (text?: string): string | undefined => {
   if (!text) return undefined;
@@ -85,13 +99,10 @@ function updateLocalPresence(mx: MatrixClient, statusMsg: string | undefined): v
   user.emit(UserEvent.Presence, undefined, user);
 }
 
-export const setCustomStatus = (
-  mx: MatrixClient,
-  emoji: string,
-  text?: string
-): Promise<void> => {
+export const setCustomStatus = (mx: MatrixClient, emoji: string, text?: string): Promise<void> => {
   const statusMsg = formatStatusMsg(emoji, text);
   updateLocalPresence(mx, statusMsg);
+  saveActiveStatusMsg(statusMsg);
   return mx.setPresence({ presence: 'online', status_msg: statusMsg });
 };
 
@@ -102,10 +113,24 @@ export const setCustomStatusWithTime = (
 ): Promise<void> => {
   const statusMsg = formatStatusMsgWithTime(emoji, text);
   updateLocalPresence(mx, statusMsg);
+  saveActiveStatusMsg(statusMsg);
   return mx.setPresence({ presence: 'online', status_msg: statusMsg });
 };
 
 export const clearCustomStatus = (mx: MatrixClient): Promise<void> => {
   updateLocalPresence(mx, undefined);
+  saveActiveStatusMsg(undefined);
   return mx.setPresence({ presence: 'online', status_msg: '' });
+};
+
+export const restoreCustomStatus = (mx: MatrixClient): void => {
+  const statusMsg = getActiveStatusMsg();
+  if (!statusMsg) return;
+
+  const userId = mx.getUserId();
+  const user = userId ? mx.getUser(userId) : undefined;
+  if (user && user.presenceStatusMsg !== undefined) return;
+
+  updateLocalPresence(mx, statusMsg);
+  mx.setPresence({ presence: 'online', status_msg: statusMsg }).catch(() => undefined);
 };

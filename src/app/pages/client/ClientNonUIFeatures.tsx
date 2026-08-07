@@ -1,7 +1,7 @@
 import { useAtomValue } from 'jotai';
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RoomEvent, RoomEventHandlerMap } from 'matrix-js-sdk';
+import { ClientEvent, ClientEventHandlerMap, RoomEvent, RoomEventHandlerMap } from 'matrix-js-sdk';
 import { roomToUnreadAtom, unreadEqual, unreadInfoToUnread } from '../../state/room/roomToUnread';
 import LogoSVG from '../../../../public/res/svg/cinny.svg';
 import LogoUnreadSVG from '../../../../public/res/svg/cinny-unread.svg';
@@ -31,6 +31,7 @@ import { useCustomStatus } from '../../hooks/useCustomStatus';
 import { useCryptoRecovery } from '../../hooks/useCryptoRecovery';
 import {
   DEFAULT_STATUS_PRESETS,
+  restoreCustomStatus,
   setCustomStatusWithTime,
   stripTimeSuffix,
 } from '../../plugins/custom-status';
@@ -44,6 +45,28 @@ import { updateTrayIcon } from '../../utils/trayIcon';
 
 function CryptoRecovery() {
   useCryptoRecovery();
+  return null;
+}
+
+function CustomStatusRestore() {
+  const mx = useMatrixClient();
+  const restoredRef = useRef(false);
+
+  useEffect(() => {
+    const handleSync: ClientEventHandlerMap[ClientEvent.Sync] = (state) => {
+      if (state !== 'SYNCING' || restoredRef.current) return;
+      restoredRef.current = true;
+      restoreCustomStatus(mx);
+    };
+
+    mx.on(ClientEvent.Sync, handleSync);
+    handleSync(mx.getSyncState());
+
+    return () => {
+      mx.removeListener(ClientEvent.Sync, handleSync);
+    };
+  }, [mx]);
+
   return null;
 }
 
@@ -366,6 +389,7 @@ export function ClientNonUIFeatures({ children }: ClientNonUIFeaturesProps) {
       <InviteNotifications />
       <MessageNotifications />
       <CryptoRecovery />
+      <CustomStatusRestore />
       <DesktopFeatures />
       {children}
     </>
