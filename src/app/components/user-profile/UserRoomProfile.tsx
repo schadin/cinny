@@ -73,25 +73,25 @@ export function UserRoomProfile({ userId }: UserRoomProfileProps) {
         userId={userId}
         avatarUrl={avatarUrl}
         presence={presence && presence.lastActiveTs !== 0 ? presence : undefined}
+        action={
+          userId !== myUserId ? (
+            <Button
+              size="300"
+              variant="Primary"
+              fill="Solid"
+              radii="300"
+              before={<Icon size="50" src={Icons.Message} filled />}
+              onClick={handleMessage}
+            >
+              <Text size="B300">Message</Text>
+            </Button>
+          ) : undefined
+        }
       />
       <Box direction="Column" gap="500" style={{ padding: config.space.S400 }}>
         <Box direction="Column" gap="400">
           <Box gap="400" alignItems="Start">
-            <UserHeroName displayName={displayName} userId={userId} />
-            {userId !== myUserId && (
-              <Box shrink="No">
-                <Button
-                  size="300"
-                  variant="Primary"
-                  fill="Solid"
-                  radii="300"
-                  before={<Icon size="50" src={Icons.Message} filled />}
-                  onClick={handleMessage}
-                >
-                  <Text size="B300">Message</Text>
-                </Button>
-              </Box>
-            )}
+            <UserHeroName displayName={displayName} userId={userId} presence={presence} />
           </Box>
           <Box alignItems="Center" gap="200" wrap="Wrap">
             {server && <ServerChip server={server} />}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Text } from 'folds';
+import { Modal, Text } from 'folds';
 import { SidebarItem, SidebarItemTooltip, SidebarAvatar } from '../../../components/sidebar';
 import { UserAvatar } from '../../../components/user-avatar';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
@@ -9,6 +9,7 @@ import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
 import { Settings } from '../../../features/settings';
 import { useUserProfile } from '../../../hooks/useUserProfile';
 import { Modal500 } from '../../../components/Modal500';
+import { StatusButton } from './StatusButton';
 
 export function SettingsTab() {
   const mx = useMatrixClient();
@@ -30,13 +31,16 @@ export function SettingsTab() {
     <SidebarItem active={settings}>
       <SidebarItemTooltip tooltip="User Settings">
         {(triggerRef) => (
-          <SidebarAvatar as="button" ref={triggerRef} onClick={openSettings}>
-            <UserAvatar
-              userId={userId}
-              src={avatarUrl}
-              renderFallback={() => <Text size="H4">{nameInitials(displayName)}</Text>}
-            />
-          </SidebarAvatar>
+          <div style={{ position: 'relative' }}>
+            <SidebarAvatar as="button" ref={triggerRef} onClick={openSettings}>
+              <UserAvatar
+                userId={userId}
+                src={avatarUrl}
+                renderFallback={() => <Text size="H4">{nameInitials(displayName)}</Text>}
+              />
+            </SidebarAvatar>
+            <StatusButton />
+          </div>
         )}
       </SidebarItemTooltip>
       {settings && (

@@ -18,6 +18,9 @@ import colorMXID from '../../../util/colorMXID';
 import { getMxIdLocalPart } from '../../utils/matrix';
 import { BreakWord, LineClamp3 } from '../../styles/Text.css';
 import { UserPresence } from '../../hooks/useUserPresence';
+import { getLastActiveLabel } from '../../utils/lastActive';
+import { useCustomStatus } from '../../hooks/useCustomStatus';
+import { stripTimeSuffix, extractStatusTimeSuffix } from '../../plugins/custom-status';
 import { AvatarPresence, PresenceBadge } from '../presence';
 import { ImageViewer } from '../image-viewer';
 import { stopPropagation } from '../../utils/keyboard';
@@ -26,8 +29,9 @@ type UserHeroProps = {
   userId: string;
   avatarUrl?: string;
   presence?: UserPresence;
+  action?: React.ReactNode;
 };
-export function UserHero({ userId, avatarUrl, presence }: UserHeroProps) {
+export function UserHero({ userId, avatarUrl, presence, action }: UserHeroProps) {
   const [viewAvatar, setViewAvatar] = useState<string>();
 
   return (
@@ -47,7 +51,7 @@ export function UserHero({ userId, avatarUrl, presence }: UserHeroProps) {
         <AvatarPresence
           className={css.UserAvatarContainer}
           badge={
-            presence && <PresenceBadge presence={presence.presence} status={presence.status} />
+            presence && <PresenceBadge presence={presence.presence} lastActiveTs={presence.lastActiveTs} />
           }
         >
           <Avatar
@@ -65,6 +69,7 @@ export function UserHero({ userId, avatarUrl, presence }: UserHeroProps) {
             />
           </Avatar>
         </AvatarPresence>
+        {action && <Box className={css.UserHeroAction}>{action}</Box>}
         {viewAvatar && (
           <Overlay open backdrop={<OverlayBackdrop />}>
             <OverlayCenter>
@@ -95,9 +100,16 @@ export function UserHero({ userId, avatarUrl, presence }: UserHeroProps) {
 type UserHeroNameProps = {
   displayName?: string;
   userId: string;
+  presence?: UserPresence;
 };
-export function UserHeroName({ displayName, userId }: UserHeroNameProps) {
+export function UserHeroName({ displayName, userId, presence }: UserHeroNameProps) {
   const username = getMxIdLocalPart(userId);
+  const status = useCustomStatus(userId);
+
+  const lastActiveLabel = presence ? getLastActiveLabel(presence.lastActiveTs) : undefined;
+  const statusTime = status?.text ? extractStatusTimeSuffix(status.text) : undefined;
+  const customText = status?.text ? stripTimeSuffix(status.text) : undefined;
+  const hasStatusLine = lastActiveLabel || status?.emoji || customText;
 
   return (
     <Box grow="Yes" direction="Column" gap="0">
@@ -115,6 +127,16 @@ export function UserHeroName({ displayName, userId }: UserHeroNameProps) {
           @{username}
         </Text>
       </Box>
+      {hasStatusLine && (
+        <Box alignItems="Center" gap="100" wrap="Wrap">
+          {lastActiveLabel && <Text size="T200" priority="300">{lastActiveLabel}</Text>}
+          {lastActiveLabel && (status?.emoji || customText || statusTime) && <Text size="T200" priority="300">•</Text>}
+          {status?.emoji && <Text size="T200">{status.emoji}</Text>}
+          {customText && <Text size="T200" priority="300" truncate>{customText}</Text>}
+          {customText && statusTime && <Text size="T200" priority="300">•</Text>}
+          {statusTime && <Text size="T200" priority="300">{statusTime}</Text>}
+        </Box>
+      )}
     </Box>
   );
 }

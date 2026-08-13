@@ -1,7 +1,7 @@
 import { useAtomValue } from 'jotai';
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RoomEvent, RoomEventHandlerMap } from 'matrix-js-sdk';
+import { ClientEvent, ClientEventHandlerMap, RoomEvent, RoomEventHandlerMap } from 'matrix-js-sdk';
 import { roomToUnreadAtom, unreadEqual, unreadInfoToUnread } from '../../state/room/roomToUnread';
 import LogoSVG from '../../../../public/res/svg/cinny.svg';
 import LogoUnreadSVG from '../../../../public/res/svg/cinny-unread.svg';
@@ -27,6 +27,29 @@ import { getMxIdLocalPart, mxcUrlToHttp } from '../../utils/matrix';
 import { useSelectedRoom } from '../../hooks/router/useSelectedRoom';
 import { useInboxNotificationsSelected } from '../../hooks/router/useInbox';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
+import { restoreCustomStatus } from '../../plugins/custom-status';
+
+function CustomStatusRestore() {
+  const mx = useMatrixClient();
+  const restoredRef = useRef(false);
+
+  useEffect(() => {
+    const handleSync: ClientEventHandlerMap[ClientEvent.Sync] = (state) => {
+      if (state !== 'SYNCING' || restoredRef.current) return;
+      restoredRef.current = true;
+      restoreCustomStatus(mx);
+    };
+
+    mx.on(ClientEvent.Sync, handleSync);
+    handleSync(mx.getSyncState());
+
+    return () => {
+      mx.removeListener(ClientEvent.Sync, handleSync);
+    };
+  }, [mx]);
+
+  return null;
+}
 
 function SystemEmojiFeature() {
   const [twitterEmoji] = useSetting(settingsAtom, 'twitterEmoji');
@@ -271,6 +294,7 @@ export function ClientNonUIFeatures({ children }: ClientNonUIFeaturesProps) {
       <FaviconUpdater />
       <InviteNotifications />
       <MessageNotifications />
+      <CustomStatusRestore />
       {children}
     </>
   );
