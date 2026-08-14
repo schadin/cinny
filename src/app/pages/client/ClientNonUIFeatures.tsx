@@ -1,7 +1,15 @@
 import { useAtomValue } from 'jotai';
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ClientEvent, ClientEventHandlerMap, RoomEvent, RoomEventHandlerMap } from 'matrix-js-sdk';
+import {
+  ClientEvent,
+  ClientEventHandlerMap,
+  MatrixEvent,
+  MatrixEventEvent,
+  Room,
+  RoomEvent,
+  RoomEventHandlerMap,
+} from 'matrix-js-sdk';
 import { roomToUnreadAtom, unreadEqual, unreadInfoToUnread } from '../../state/room/roomToUnread';
 import LogoSVG from '../../../../public/res/svg/cinny.svg';
 import LogoUnreadSVG from '../../../../public/res/svg/cinny-unread.svg';
@@ -22,7 +30,7 @@ import {
   getUnreadInfo,
   isNotificationEvent,
 } from '../../utils/room';
-import { NotificationType, UnreadInfo } from '../../../types/matrix/room';
+import { MessageEvent, NotificationType, UnreadInfo } from '../../../types/matrix/room';
 import { getMxIdLocalPart, mxcUrlToHttp } from '../../utils/matrix';
 import { useSelectedRoom } from '../../hooks/router/useSelectedRoom';
 import { useInboxNotificationsSelected } from '../../hooks/router/useInbox';
@@ -286,6 +294,25 @@ function MessageNotifications() {
     [navigate]
   );
 
+  const notifyForEvent = useCallback(
+    (mEvent: MatrixEvent, room: Room) => {
+      const sender = mEvent.getSender();
+      if (!sender || sender === mx.getUserId()) return;
+      const avatarMxc = room.getAvatarFallbackMember()?.getMxcAvatarUrl() ?? room.getMxcAvatarUrl();
+      notify({
+        roomName: room.name ?? 'Unknown',
+        roomAvatar: avatarMxc
+          ? mxcUrlToHttp(mx, avatarMxc, useAuthentication, 96, 96, 'crop') ?? undefined
+          : undefined,
+        username: getMemberDisplayName(room, sender) ?? getMxIdLocalPart(sender) ?? sender,
+        roomId: room.roomId,
+        eventId: mEvent.getId() ?? '',
+        messagePreview: extractMessagePreview(mEvent),
+      });
+    },
+    [mx, notify, useAuthentication]
+  );
+
   const playSound = useCallback(() => {
     const audioElement = audioRef.current;
     audioElement?.play();
@@ -327,18 +354,18 @@ function MessageNotifications() {
       }
 
       if (showNotifications) {
-        const avatarMxc =
-          room.getAvatarFallbackMember()?.getMxcAvatarUrl() ?? room.getMxcAvatarUrl();
-        notify({
-          roomName: room.name ?? 'Unknown',
-          roomAvatar: avatarMxc
-            ? mxcUrlToHttp(mx, avatarMxc, useAuthentication, 96, 96, 'crop') ?? undefined
-            : undefined,
-          username: getMemberDisplayName(room, sender) ?? getMxIdLocalPart(sender) ?? sender,
-          roomId: room.roomId,
-          eventId,
-          messagePreview: extractMessagePreview(mEvent),
-        });
+        if (mEvent.getType() === MessageEvent.RoomMessageEncrypted) {
+          let notified = false;
+          const notifyDecrypted = () => {
+            if (notified) return;
+            notified = true;
+            notifyForEvent(mEvent, room);
+          };
+          mEvent.once(MatrixEventEvent.Decrypted, notifyDecrypted);
+          setTimeout(notifyDecrypted, 5000);
+        } else {
+          notifyForEvent(mEvent, room);
+        }
       }
 
       if (notificationSound) {
@@ -355,9 +382,8 @@ function MessageNotifications() {
     notificationSelected,
     showNotifications,
     playSound,
-    notify,
+    notifyForEvent,
     selectedRoomId,
-    useAuthentication,
   ]);
 
   return (

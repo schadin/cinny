@@ -94,7 +94,7 @@ export function extractMessagePreview(mEvent: MatrixEvent): string {
   if (msgtype === MsgType.File) return 'Sent a file';
   if (msgtype === MsgType.Location) return 'Sent a location';
 
-  if (msgtype === 'm.bad.encrypted') return 'Sent an encrypted message';
+  if (msgtype === 'm.bad.encrypted') return 'Unable to decrypt message';
 
   return body ? truncate(body, 100) : 'Sent a message';
 }
