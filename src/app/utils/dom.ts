@@ -61,8 +61,13 @@ export const selectFile = <M extends boolean | undefined = undefined>(
   new Promise((resolve) => {
     const input = document.createElement('input');
     input.type = 'file';
+    input.style.position = 'fixed';
+    input.style.left = '-9999px';
+    input.style.top = '0';
     if (accept) input.accept = accept;
     if (multiple) input.multiple = true;
+
+    let settled = false;
 
     const changeHandler = () => {
       const fileList = input.files;
@@ -72,10 +77,35 @@ export const selectFile = <M extends boolean | undefined = undefined>(
         const files: File[] = getFilesFromFileList(fileList);
         resolve((multiple ? files : files[0]) as FilesOrFile<M>);
       }
+      cleanup();
+    };
+
+    const cancelHandler = () => {
+      resolve(undefined);
+      cleanup();
+    };
+
+    const focusHandler = () => {
+      if (settled) return;
+      window.setTimeout(() => {
+        if (settled) return;
+        resolve(undefined);
+        cleanup();
+      }, 300);
+    };
+
+    const cleanup = () => {
+      settled = true;
       input.removeEventListener('change', changeHandler);
+      input.removeEventListener('cancel', cancelHandler);
+      window.removeEventListener('focus', focusHandler);
+      input.remove();
     };
 
     input.addEventListener('change', changeHandler);
+    input.addEventListener('cancel', cancelHandler);
+    window.addEventListener('focus', focusHandler);
+    document.body.appendChild(input);
     input.click();
   });
 
