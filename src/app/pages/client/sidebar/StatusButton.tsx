@@ -33,6 +33,7 @@ export function StatusButton() {
   const hasStatus = !!currentEmoji;
 
   const [customPresets] = useSetting(settingsAtom, 'statusPresets');
+  const [statusNoticeRoomId] = useSetting(settingsAtom, 'statusNoticeRoomId');
   const presets: StatusPreset[] = [...DEFAULT_STATUS_PRESETS, ...customPresets];
 
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
@@ -45,10 +46,10 @@ export function StatusButton() {
 
   const handleSelect = useCallback(
     (emoji: string, text: string) => {
-      setCustomStatusWithTime(mx, emoji, text);
+      setCustomStatusWithTime(mx, emoji, text, statusNoticeRoomId);
       closeMenu();
     },
-    [mx, closeMenu]
+    [mx, closeMenu, statusNoticeRoomId]
   );
 
   const isActive = useCallback(

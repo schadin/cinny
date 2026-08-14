@@ -1,4 +1,4 @@
-import { MatrixClient, UserEvent } from 'matrix-js-sdk';
+import { MatrixClient, MsgType, UserEvent } from 'matrix-js-sdk';
 
 export type CustomStatus = {
   emoji?: string;
@@ -99,21 +99,41 @@ function updateLocalPresence(mx: MatrixClient, statusMsg: string | undefined): v
   user.emit(UserEvent.Presence, undefined, user);
 }
 
-export const setCustomStatus = (mx: MatrixClient, emoji: string, text?: string): Promise<void> => {
+const sendStatusNotice = (
+  mx: MatrixClient,
+  noticeRoomId: string | undefined,
+  emoji: string,
+  text?: string
+): void => {
+  if (!noticeRoomId) return;
+  const body = formatStatusMsg(emoji, text);
+  if (!body) return;
+  mx.sendMessage(noticeRoomId, { msgtype: MsgType.Notice, body }).catch(() => undefined);
+};
+
+export const setCustomStatus = (
+  mx: MatrixClient,
+  emoji: string,
+  text?: string,
+  noticeRoomId?: string
+): Promise<void> => {
   const statusMsg = formatStatusMsg(emoji, text);
   updateLocalPresence(mx, statusMsg);
   saveActiveStatusMsg(statusMsg);
+  sendStatusNotice(mx, noticeRoomId, emoji, text);
   return mx.setPresence({ presence: 'online', status_msg: statusMsg });
 };
 
 export const setCustomStatusWithTime = (
   mx: MatrixClient,
   emoji: string,
-  text?: string
+  text?: string,
+  noticeRoomId?: string
 ): Promise<void> => {
   const statusMsg = formatStatusMsgWithTime(emoji, text);
   updateLocalPresence(mx, statusMsg);
   saveActiveStatusMsg(statusMsg);
+  sendStatusNotice(mx, noticeRoomId, emoji, text);
   return mx.setPresence({ presence: 'online', status_msg: statusMsg });
 };
 

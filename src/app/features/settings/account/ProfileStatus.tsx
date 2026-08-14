@@ -45,6 +45,7 @@ export function StatusEditor() {
   const currentText = currentStatus?.text ?? '';
 
   const [customPresets, setCustomPresets] = useSetting(settingsAtom, 'statusPresets');
+  const [statusNoticeRoomId] = useSetting(settingsAtom, 'statusNoticeRoomId');
   const allPresets = [...DEFAULT_STATUS_PRESETS, ...customPresets];
 
   const [adding, setAdding] = useState(false);
@@ -142,10 +143,10 @@ export function StatusEditor() {
       currentEmoji === customPresets[editingIndex].emoji &&
       stripTimeSuffix(currentText) === customPresets[editingIndex].text
     ) {
-      setCustomStatusWithTime(mx, newEmoji, newText);
+      setCustomStatusWithTime(mx, newEmoji, newText, statusNoticeRoomId);
     }
     setEditingIndex(null);
-  }, [editEmoji, editText, editingIndex, customPresets, setCustomPresets, currentEmoji, currentText, mx]);
+  }, [editEmoji, editText, editingIndex, customPresets, setCustomPresets, currentEmoji, currentText, mx, statusNoticeRoomId]);
 
   const handleEditCancel = useCallback(() => {
     setEditingIndex(null);
@@ -445,6 +446,10 @@ export function StatusEditor() {
 }
 
 export function ProfileStatus() {
+  const [statusNoticeRoomId, setStatusNoticeRoomId] = useSetting(
+    settingsAtom,
+    'statusNoticeRoomId'
+  );
   return (
     <Box direction="Column" gap="100">
       <Text size="L400">Status</Text>
@@ -467,6 +472,32 @@ export function ProfileStatus() {
           }
         >
           <StatusEditor />
+        </SettingTile>
+        <SettingTile
+          title={
+            <Text as="span" size="L400">
+              Status Notice Room
+            </Text>
+          }
+          description={
+            <Text size="T200" priority="300">
+              Room ID to send an m.notice message when your status changes. Leave empty to
+              disable.
+            </Text>
+          }
+        >
+          <Input
+            value={statusNoticeRoomId ?? ''}
+            onChange={
+              ((evt) =>
+                setStatusNoticeRoomId(
+                  evt.currentTarget.value
+                )) as ChangeEventHandler<HTMLInputElement>
+            }
+            variant="Secondary"
+            radii="300"
+            placeholder="!roomId:example.org"
+          />
         </SettingTile>
       </SequenceCard>
     </Box>

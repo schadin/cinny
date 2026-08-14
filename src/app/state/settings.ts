@@ -49,6 +49,7 @@ export interface Settings {
 
   developerTools: boolean;
   statusPresets: StatusPreset[];
+  statusNoticeRoomId?: string;
 }
 
 const defaultSettings: Settings = {
@@ -84,6 +85,7 @@ const defaultSettings: Settings = {
 
   developerTools: false,
   statusPresets: [],
+  statusNoticeRoomId: '',
 };
 
 export const getSettings = () => {
