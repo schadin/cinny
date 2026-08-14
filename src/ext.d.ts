@@ -1,5 +1,7 @@
 /// <reference types="vite/client" />
 
+declare const __CINNY_VERSION__: string;
+
 declare module 'browser-encrypt-attachment' {
   export interface EncryptedAttachmentInfo {
     v: string;

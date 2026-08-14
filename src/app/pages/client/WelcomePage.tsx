@@ -24,7 +24,7 @@ export function WelcomePage() {
                   target="_blank"
                   rel="noreferrer noopener"
                 >
-                  v4.12.6
+                  v{__CINNY_VERSION__}
                 </a>
               </span>
             }

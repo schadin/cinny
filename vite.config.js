@@ -78,6 +78,9 @@ export default defineConfig({
   appType: 'spa',
   publicDir: false,
   base: buildConfig.base,
+  define: {
+    __CINNY_VERSION__: JSON.stringify(buildConfig.version),
+  },
   server: {
     port: 8080,
     host: true,
