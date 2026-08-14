@@ -9,7 +9,7 @@ import LogoHighlightSVG from '../../../../public/res/svg/cinny-highlight.svg';
 import NotificationSound from '../../../../public/sound/notification.ogg';
 import InviteSound from '../../../../public/sound/invite.ogg';
 import { setFavicon } from '../../utils/dom';
-import { extractMessagePreview, showNotification } from '../../utils/notification';
+import { extractMessagePreview, isTauri, showNotification } from '../../utils/notification';
 import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { allInvitesAtom } from '../../state/room-list/inviteList';
@@ -27,7 +27,20 @@ import { getMxIdLocalPart, mxcUrlToHttp } from '../../utils/matrix';
 import { useSelectedRoom } from '../../hooks/router/useSelectedRoom';
 import { useInboxNotificationsSelected } from '../../hooks/router/useInbox';
 import { useMediaAuthentication } from '../../hooks/useMediaAuthentication';
-import { restoreCustomStatus } from '../../plugins/custom-status';
+import { useCustomStatus } from '../../hooks/useCustomStatus';
+import {
+  DEFAULT_STATUS_PRESETS,
+  restoreCustomStatus,
+  setCustomStatusWithTime,
+  stripTimeSuffix,
+} from '../../plugins/custom-status';
+import {
+  listenTrayStatus,
+  setActiveStatus,
+  setDesktopSettings,
+  setStatusPresets,
+} from '../../utils/desktop';
+import { updateTrayIcon } from '../../utils/trayIcon';
 
 function CustomStatusRestore() {
   const mx = useMatrixClient();
@@ -47,6 +60,79 @@ function CustomStatusRestore() {
       mx.removeListener(ClientEvent.Sync, handleSync);
     };
   }, [mx]);
+
+  return null;
+}
+
+function DesktopFeatures() {
+  const mx = useMatrixClient();
+  const userId = mx.getUserId()!;
+  const currentStatus = useCustomStatus(userId);
+  const roomToUnread = useAtomValue(roomToUnreadAtom);
+
+  const [showTrayIcon] = useSetting(settingsAtom, 'showTrayIcon');
+  const [customPresets] = useSetting(settingsAtom, 'statusPresets');
+
+  useEffect(() => {
+    if (!isTauri()) return undefined;
+    const timer = setTimeout(() => {
+      setDesktopSettings(showTrayIcon);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [showTrayIcon]);
+
+  useEffect(() => {
+    if (!isTauri()) return undefined;
+    const presets = [...DEFAULT_STATUS_PRESETS, ...customPresets];
+    const timer = setTimeout(() => {
+      setStatusPresets(presets);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [customPresets]);
+
+  useEffect(() => {
+    if (!isTauri()) return undefined;
+    const emoji = currentStatus?.emoji ?? '';
+    const text = currentStatus?.text ? stripTimeSuffix(currentStatus.text) : '';
+    const timer = setTimeout(() => {
+      setActiveStatus(emoji || text ? { emoji, text } : null);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [currentStatus]);
+
+  useEffect(() => {
+    if (!isTauri()) return undefined;
+    let disposed = false;
+    const disposeFns: Array<() => void> = [];
+    listenTrayStatus((preset) => {
+      setCustomStatusWithTime(mx, preset.emoji, preset.text);
+    }).then((fn) => {
+      if (disposed) {
+        fn();
+      } else {
+        disposeFns.push(fn);
+      }
+    });
+    return () => {
+      disposed = true;
+      disposeFns.forEach((fn) => fn());
+    };
+  }, [mx]);
+
+  useEffect(() => {
+    if (!isTauri() || !showTrayIcon) return undefined;
+    let total = 0;
+    let highlight = 0;
+    roomToUnread.forEach((unread) => {
+      total += unread.total;
+      highlight += unread.highlight;
+    });
+    const emoji = currentStatus?.emoji ?? '';
+    const timer = setTimeout(() => {
+      updateTrayIcon(emoji || null, { total, highlight });
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [currentStatus, roomToUnread, showTrayIcon]);
 
   return null;
 }
@@ -295,6 +381,7 @@ export function ClientNonUIFeatures({ children }: ClientNonUIFeaturesProps) {
       <InviteNotifications />
       <MessageNotifications />
       <CustomStatusRestore />
+      <DesktopFeatures />
       {children}
     </>
   );

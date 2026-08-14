@@ -50,6 +50,7 @@ import { useMessageLayoutItems } from '../../../hooks/useMessageLayout';
 import { useMessageSpacingItems } from '../../../hooks/useMessageSpacing';
 import { useDateFormatItems } from '../../../hooks/useDateFormat';
 import { SequenceCardStyle } from '../styles.css';
+import { isTauri } from '../../../utils/notification';
 
 type ThemeSelectorProps = {
   themeNames: Record<string, string>;
@@ -349,6 +350,25 @@ function Appearance() {
 
       <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
         <SettingTile title="Page Zoom" after={<PageZoomInput />} />
+      </SequenceCard>
+    </Box>
+  );
+}
+
+function Desktop() {
+  const [showTrayIcon, setShowTrayIcon] = useSetting(settingsAtom, 'showTrayIcon');
+
+  if (!isTauri()) return null;
+
+  return (
+    <Box direction="Column" gap="100">
+      <Text size="L400">Desktop</Text>
+      <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
+        <SettingTile
+          title="Show Tray Icon"
+          description="Show the app icon in the system tray."
+          after={<Switch variant="Primary" value={showTrayIcon} onChange={setShowTrayIcon} />}
+        />
       </SequenceCard>
     </Box>
   );
@@ -1003,6 +1023,7 @@ export function General({ requestClose }: GeneralProps) {
           <PageContent>
             <Box direction="Column" gap="700">
               <Appearance />
+              <Desktop />
               <DateAndTime />
               <Editor />
               <Messages />
