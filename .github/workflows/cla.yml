@@ -21,7 +21,7 @@ jobs:
           path-to-signatures: 'signatures.json'
           path-to-document: 'https://github.com/cinnyapp/cla/blob/main/cla.md' # e.g. a CLA or a DCO document
           # branch should not be protected
-          branch: 'main'
+          branch: 'harrier'
           allowlist: ajbura,bot*
 
           #below are the optional inputs - If the optional inputs are not given, then default values will be taken

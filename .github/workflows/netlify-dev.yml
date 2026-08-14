@@ -1,9 +1,9 @@
-name: Deploy to Netlify (dev)
+name: Deploy to Netlify (harrier)
 
 on:
   push:
     branches:
-      - dev
+      - harrier
 
 jobs:
   deploy-to-netlify:
@@ -32,7 +32,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           production-deploy: true
           github-deployment-environment: nightly
-          github-deployment-description: 'Nightly deployment on each commit to dev branch'
+          github-deployment-description: 'Nightly deployment on each commit to harrier branch'
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
           NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID_DEV }}
