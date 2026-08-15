@@ -41,6 +41,7 @@ import {
   BubbleLayout,
   CompactLayout,
   MessageBase,
+  MessageStatus,
   ModernLayout,
   Time,
   Username,
@@ -784,6 +785,7 @@ export const Message = as<'div', MessageProps>(
             hour24Clock={hour24Clock}
             dateFormatString={dateFormatString}
           />
+          <MessageStatus room={room} mEvent={mEvent} />
         </Box>
       </Box>
     );
