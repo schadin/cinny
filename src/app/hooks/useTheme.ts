@@ -1,7 +1,7 @@
 import { lightTheme } from 'folds';
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { onDarkFontWeight, onLightFontWeight } from '../../config.css';
-import { butterTheme, darkTheme, silverTheme } from '../../colors.css';
+import { alucardTheme, butterTheme, darkTheme, draculaTheme, silverTheme } from '../../colors.css';
 import { settingsAtom } from '../state/settings';
 import { useSetting } from '../state/hooks/settings';
 
@@ -37,9 +37,22 @@ export const ButterTheme: Theme = {
   kind: ThemeKind.Dark,
   classNames: ['butter-theme', butterTheme, onDarkFontWeight, 'prism-dark'],
 };
+export const DraculaTheme: Theme = {
+  id: 'dracula-theme',
+  kind: ThemeKind.Dark,
+  classNames: ['dracula-theme', draculaTheme, onDarkFontWeight, 'prism-dracula'],
+};
+export const AlucardTheme: Theme = {
+  id: 'alucard-theme',
+  kind: ThemeKind.Light,
+  classNames: ['alucard-theme', alucardTheme, onLightFontWeight, 'prism-alucard'],
+};
 
 export const useThemes = (): Theme[] => {
-  const themes: Theme[] = useMemo(() => [LightTheme, SilverTheme, DarkTheme, ButterTheme], []);
+  const themes: Theme[] = useMemo(
+    () => [LightTheme, SilverTheme, AlucardTheme, DarkTheme, ButterTheme, DraculaTheme],
+    []
+  );
 
   return themes;
 };
@@ -49,8 +62,10 @@ export const useThemeNames = (): Record<string, string> =>
     () => ({
       [LightTheme.id]: 'Light',
       [SilverTheme.id]: 'Silver',
+      [AlucardTheme.id]: 'Alucard',
       [DarkTheme.id]: 'Dark',
       [ButterTheme.id]: 'Butter',
+      [DraculaTheme.id]: 'Dracula',
     }),
     []
   );

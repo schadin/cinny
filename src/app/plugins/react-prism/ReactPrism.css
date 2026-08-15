@@ -22,6 +22,30 @@
   --prism-regex: #fd971f;
 }
 
+.prism-dracula {
+  --prism-comment: #6272a4;
+  --prism-punctuation: #f8f8f2;
+  --prism-property: #ff79c6;
+  --prism-boolean: #ffb86c;
+  --prism-selector: #f1fa8c;
+  --prism-operator: #ff79c6;
+  --prism-atrule: #50fa7b;
+  --prism-keyword: #ff79c6;
+  --prism-regex: #ff5555;
+}
+
+.prism-alucard {
+  --prism-comment: #6c664b;
+  --prism-punctuation: #1f1f1f;
+  --prism-property: #a3144d;
+  --prism-boolean: #a34d14;
+  --prism-selector: #846e15;
+  --prism-operator: #a3144d;
+  --prism-atrule: #14710a;
+  --prism-keyword: #a3144d;
+  --prism-regex: #cb3a2a;
+}
+
 code .token.comment,
 code .token.prolog,
 code .token.doctype,
