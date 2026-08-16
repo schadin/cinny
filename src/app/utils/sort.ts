@@ -1,4 +1,5 @@
 import { MatrixClient } from 'matrix-js-sdk';
+import { RoomSortType } from '../../types/matrix/accountData';
 
 export type SortFunc<T> = (a: T, b: T) => number;
 
@@ -33,6 +34,35 @@ export const factoryRoomIdByAtoZ =
     }
     return 0;
   };
+
+export const factoryRoomIdByZtoA =
+  (mx: MatrixClient): SortFunc<string> =>
+  (a, b) =>
+    factoryRoomIdByAtoZ(mx)(b, a);
+
+export const factoryRoomIdByActivityAsc =
+  (mx: MatrixClient): SortFunc<string> =>
+  (a, b) =>
+    factoryRoomIdByActivity(mx)(b, a);
+
+export const factoryRoomIdSort = (
+  mx: MatrixClient,
+  sortType: RoomSortType
+): SortFunc<string> | undefined => {
+  switch (sortType) {
+    case 'atoz':
+      return factoryRoomIdByAtoZ(mx);
+    case 'ztoa':
+      return factoryRoomIdByZtoA(mx);
+    case 'activity_desc':
+      return factoryRoomIdByActivity(mx);
+    case 'activity_asc':
+      return factoryRoomIdByActivityAsc(mx);
+    case 'manual':
+    default:
+      return undefined;
+  }
+};
 
 export const factoryRoomIdByUnreadCount =
   (getUnreadCount: (roomId: string) => number): SortFunc<string> =>

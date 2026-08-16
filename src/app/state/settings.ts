@@ -1,5 +1,6 @@
 import { atom } from 'jotai';
 import { StatusPreset } from '../plugins/custom-status';
+import { RoomSortType } from '../../types/matrix/accountData';
 
 const STORAGE_KEY = 'settings';
 export type DateFormat =
@@ -51,6 +52,7 @@ export interface Settings {
   statusPresets: StatusPreset[];
   statusNoticeRoomId?: string;
   showTrayIcon: boolean;
+  roomSortDefault: RoomSortType;
 }
 
 const defaultSettings: Settings = {
@@ -88,6 +90,7 @@ const defaultSettings: Settings = {
   statusPresets: [],
   statusNoticeRoomId: '',
   showTrayIcon: false,
+  roomSortDefault: 'manual',
 };
 
 export const getSettings = () => {

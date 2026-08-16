@@ -11,7 +11,9 @@ import { useSpace } from '../../hooks/useSpace';
 import { Page, PageContent, PageContentCenter, PageHeroSection } from '../../components/page';
 import {
   HierarchyItem,
+  HierarchyItemRoom,
   HierarchyItemSpace,
+  sortRoomsByOrder,
   useSpaceHierarchy,
 } from '../../hooks/useSpaceHierarchy';
 import { VirtualTile } from '../../components/virtualizer';
@@ -53,6 +55,7 @@ import { AccountDataEvent } from '../../../types/matrix/accountData';
 import { useRoomMembers } from '../../hooks/useRoomMembers';
 import { SpaceHierarchy } from './SpaceHierarchy';
 import { useGetRoom } from '../../hooks/useGetRoom';
+import { useRoomSortComparator, useSpaceRoomSort } from '../../hooks/useRoomSort';
 import { AsyncStatus, useAsyncCallback } from '../../hooks/useAsyncCallback';
 import { getRoomPermissionsAPI } from '../../hooks/useRoomPermissions';
 import { getRoomCreatorsForRoomId } from '../../hooks/useRoomCreators';
@@ -188,6 +191,18 @@ export function Lobby() {
 
   const getRoom = useGetRoom(allJoinedRooms);
 
+  const sortComparator = useRoomSortComparator();
+  const sortType = useSpaceRoomSort(space.roomId);
+  const sortRooms = useCallback(
+    (parentId: string, items: HierarchyItemRoom[]) => {
+      const comparator = sortComparator(parentId);
+      if (!comparator) return sortRoomsByOrder(items);
+      items.sort((a, b) => comparator(a.roomId, b.roomId));
+      return items;
+    },
+    [sortComparator]
+  );
+
   const [draggingItem, setDraggingItem] = useState<HierarchyItem>();
   const hierarchy = useSpaceHierarchy(
     space.roomId,
@@ -198,7 +213,8 @@ export function Lobby() {
         closedCategories.has(makeLobbyCategoryId(space.roomId, childId)) ||
         (draggingItem ? 'space' in draggingItem : false),
       [closedCategories, space.roomId, draggingItem]
-    )
+    ),
+    sortRooms
   );
 
   const virtualizer = useVirtualizer({
@@ -224,7 +240,16 @@ export function Lobby() {
     )
   );
 
-  const canDrop: CanDropCallback = useCanDropLobbyItem(space, roomsPowerLevels, getRoom);
+  const canDropBase: CanDropCallback = useCanDropLobbyItem(space, roomsPowerLevels, getRoom);
+  const canDrop: CanDropCallback = useCallback(
+    (item, container) => {
+      if (!('space' in item) && sortType !== 'manual') {
+        return false;
+      }
+      return canDropBase(item, container);
+    },
+    [canDropBase, sortType]
+  );
 
   const [reorderSpaceState, reorderSpace] = useAsyncCallback(
     useCallback(
@@ -497,6 +522,7 @@ export function Lobby() {
                             onDragging={setDraggingItem}
                             canDrop={canDrop}
                             disabledReorder={reordering}
+                            disabledRoomReorder={sortType !== 'manual'}
                             nextSpaceId={nextSpaceId}
                             getRoom={getRoom}
                             pinned={sidebarSpaces.has(item.space.roomId)}

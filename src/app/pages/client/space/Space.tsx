@@ -53,7 +53,15 @@ import { roomToUnreadAtom } from '../../../state/room/roomToUnread';
 import { useCategoryHandler } from '../../../hooks/useCategoryHandler';
 import { useNavToActivePathMapper } from '../../../hooks/useNavToActivePathMapper';
 import { useRoomName } from '../../../hooks/useRoomMeta';
-import { useSpaceJoinedHierarchy } from '../../../hooks/useSpaceHierarchy';
+import { useSpaceJoinedHierarchy, sortRoomsByOrder } from '../../../hooks/useSpaceHierarchy';
+import { factoryRoomIdByActivity } from '../../../utils/sort';
+import {
+  useRoomSortComparator,
+  useSetSpaceRoomSort,
+  useSpaceRoomSort,
+} from '../../../hooks/useRoomSort';
+import { RoomSortMenu } from '../../../components/RoomSortMenu';
+import { RoomSortType } from '../../../../types/matrix/accountData';
 import { allRoomsAtom } from '../../../state/room-list/roomList';
 import { PageNav, PageNavContent, PageNavHeader } from '../../../components/page';
 import { usePowerLevels } from '../../../hooks/usePowerLevels';
@@ -248,6 +256,9 @@ function SpaceHeader() {
   const space = useSpace();
   const spaceName = useRoomName(space);
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
+  const [sortMenuAnchor, setSortMenuAnchor] = useState<RectCords>();
+  const sortType = useSpaceRoomSort(space.roomId);
+  const setSpaceRoomSort = useSetSpaceRoomSort();
 
   const joinRules = useStateEvent(
     space,
@@ -262,6 +273,19 @@ function SpaceHeader() {
     });
   };
 
+  const handleOpenSortMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
+    const cords = evt.currentTarget.getBoundingClientRect();
+    setSortMenuAnchor((currentState) => {
+      if (currentState) return undefined;
+      return cords;
+    });
+  };
+
+  const handleSelectSort = (type: RoomSortType) => {
+    setSpaceRoomSort(space.roomId, type);
+    setSortMenuAnchor(undefined);
+  };
+
   return (
     <>
       <PageNavHeader>
@@ -273,12 +297,35 @@ function SpaceHeader() {
             {joinRules?.join_rule !== JoinRule.Public && <Icon src={Icons.Lock} size="50" />}
           </Box>
           <Box shrink="No">
+            <IconButton
+              aria-pressed={!!sortMenuAnchor}
+              variant="Background"
+              onClick={handleOpenSortMenu}
+              aria-label="Room Sorting"
+            >
+              <Icon src={Icons.Sort} size="200" filled={!!sortMenuAnchor} />
+            </IconButton>
             <IconButton aria-pressed={!!menuAnchor} variant="Background" onClick={handleOpenMenu}>
               <Icon src={Icons.VerticalDots} size="200" />
             </IconButton>
           </Box>
         </Box>
       </PageNavHeader>
+      {sortMenuAnchor && (
+        <PopOut
+          anchor={sortMenuAnchor}
+          position="Bottom"
+          align="End"
+          offset={6}
+          content={
+            <RoomSortMenu
+              selected={sortType}
+              onSelect={handleSelectSort}
+              requestClose={() => setSortMenuAnchor(undefined)}
+            />
+          }
+        />
+      )}
       {menuAnchor && (
         <PopOut
           anchor={menuAnchor}
@@ -405,6 +452,8 @@ export function Space() {
     [mx, allJoinedRooms]
   );
 
+  const sortComparator = useRoomSortComparator();
+
   const hierarchy = useSpaceJoinedHierarchy(
     space.roomId,
     getRoom,
@@ -420,8 +469,20 @@ export function Space() {
       [space.roomId, closedCategories, roomToUnread, selectedRoomId, callEmbed]
     ),
     useCallback(
-      (sId) => closedCategories.has(makeNavCategoryId(space.roomId, sId)),
-      [closedCategories, space.roomId]
+      (parentId, items) => {
+        const closed = closedCategories.has(makeNavCategoryId(space.roomId, parentId));
+        if (closed) {
+          items.sort((a, b) => factoryRoomIdByActivity(mx)(a.roomId, b.roomId));
+          return items;
+        }
+        const comparator = sortComparator(parentId);
+        if (!comparator) {
+          return sortRoomsByOrder(items);
+        }
+        items.sort((a, b) => comparator(a.roomId, b.roomId));
+        return items;
+      },
+      [mx, space.roomId, closedCategories, sortComparator]
     )
   );
 

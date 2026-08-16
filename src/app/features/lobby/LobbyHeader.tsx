@@ -38,6 +38,9 @@ import { useOpenSpaceSettings } from '../../state/hooks/spaceSettings';
 import { useRoomCreators } from '../../hooks/useRoomCreators';
 import { useRoomPermissions } from '../../hooks/useRoomPermissions';
 import { InviteUserPrompt } from '../../components/invite-user-prompt';
+import { useSetSpaceRoomSort, useSpaceRoomSort } from '../../hooks/useRoomSort';
+import { RoomSortMenu } from '../../components/RoomSortMenu';
+import { RoomSortType } from '../../../types/matrix/accountData';
 
 type LobbyMenuProps = {
   powerLevels: IPowerLevels;
@@ -145,6 +148,9 @@ export function LobbyHeader({ showProfile, powerLevels }: LobbyHeaderProps) {
   const space = useSpace();
   const setPeopleDrawer = useSetSetting(settingsAtom, 'isPeopleDrawer');
   const [menuAnchor, setMenuAnchor] = useState<RectCords>();
+  const [sortMenuAnchor, setSortMenuAnchor] = useState<RectCords>();
+  const sortType = useSpaceRoomSort(space.roomId);
+  const setSpaceRoomSort = useSetSpaceRoomSort();
   const screenSize = useScreenSizeContext();
 
   const name = useRoomName(space);
@@ -230,6 +236,30 @@ export function LobbyHeader({ showProfile, powerLevels }: LobbyHeaderProps) {
           )}
           <TooltipProvider
             position="Bottom"
+            offset={4}
+            tooltip={
+              <Tooltip>
+                <Text>Room Sorting</Text>
+              </Tooltip>
+            }
+          >
+            {(triggerRef) => (
+              <IconButton
+                fill="None"
+                onClick={(evt) =>
+                  setSortMenuAnchor((current) =>
+                    current ? undefined : evt.currentTarget.getBoundingClientRect()
+                  )
+                }
+                ref={triggerRef}
+                aria-pressed={!!sortMenuAnchor}
+              >
+                <Icon size="400" src={Icons.Sort} filled={!!sortMenuAnchor} />
+              </IconButton>
+            )}
+          </TooltipProvider>
+          <TooltipProvider
+            position="Bottom"
             align="End"
             offset={4}
             tooltip={
@@ -249,6 +279,21 @@ export function LobbyHeader({ showProfile, powerLevels }: LobbyHeaderProps) {
               </IconButton>
             )}
           </TooltipProvider>
+          <PopOut
+            anchor={sortMenuAnchor}
+            position="Bottom"
+            align="End"
+            content={
+              <RoomSortMenu
+                selected={sortType}
+                onSelect={(type: RoomSortType) => {
+                  setSpaceRoomSort(space.roomId, type);
+                  setSortMenuAnchor(undefined);
+                }}
+                requestClose={() => setSortMenuAnchor(undefined)}
+              />
+            }
+          />
           <PopOut
             anchor={menuAnchor}
             position="Bottom"

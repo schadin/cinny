@@ -51,6 +51,9 @@ import { useMessageSpacingItems } from '../../../hooks/useMessageSpacing';
 import { useDateFormatItems } from '../../../hooks/useDateFormat';
 import { SequenceCardStyle } from '../styles.css';
 import { isTauri } from '../../../utils/notification';
+import { useRoomSortMenu } from '../../../hooks/useRoomSort';
+import { RoomSortMenu } from '../../../components/RoomSortMenu';
+import { RoomSortType } from '../../../../types/matrix/accountData';
 
 type ThemeSelectorProps = {
   themeNames: Record<string, string>;
@@ -899,6 +902,67 @@ function SelectMessageSpacing() {
   );
 }
 
+function SelectRoomSortDefault() {
+  const [menuCords, setMenuCords] = useState<RectCords>();
+  const [roomSortDefault, setRoomSortDefault] = useSetting(settingsAtom, 'roomSortDefault');
+  const roomSortMenu = useRoomSortMenu();
+
+  const handleMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
+    setMenuCords(evt.currentTarget.getBoundingClientRect());
+  };
+
+  const handleSelect = (sortType: RoomSortType) => {
+    setRoomSortDefault(sortType);
+    setMenuCords(undefined);
+  };
+
+  return (
+    <>
+      <Button
+        size="300"
+        variant="Secondary"
+        outlined
+        fill="Soft"
+        radii="300"
+        after={<Icon size="300" src={Icons.ChevronBottom} />}
+        onClick={handleMenu}
+      >
+        <Text size="T300">
+          {roomSortMenu.find((i) => i.type === roomSortDefault)?.name ?? roomSortDefault}
+        </Text>
+      </Button>
+      <PopOut
+        anchor={menuCords}
+        offset={5}
+        position="Bottom"
+        align="End"
+        content={
+          <RoomSortMenu
+            selected={roomSortDefault}
+            onSelect={handleSelect}
+            requestClose={() => setMenuCords(undefined)}
+          />
+        }
+      />
+    </>
+  );
+}
+
+function Spaces() {
+  return (
+    <Box direction="Column" gap="100">
+      <Text size="L400">Spaces</Text>
+      <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
+        <SettingTile
+          title="Default Room Sorting"
+          description="Applied to spaces without their own sorting set in space settings."
+          after={<SelectRoomSortDefault />}
+        />
+      </SequenceCard>
+    </Box>
+  );
+}
+
 function Messages() {
   const [legacyUsernameColor, setLegacyUsernameColor] = useSetting(
     settingsAtom,
@@ -1026,6 +1090,7 @@ export function General({ requestClose }: GeneralProps) {
               <Desktop />
               <DateAndTime />
               <Editor />
+              <Spaces />
               <Messages />
             </Box>
           </PageContent>
