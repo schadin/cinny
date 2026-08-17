@@ -3,5 +3,25 @@
     "RoomCommon": {
       "changed_room_name": " hat den Raum Name geändert"
     }
+  },
+  "DecryptionFailure": {
+    "Action": {
+      "RequestKey": "Schlüssel anfordern",
+      "VerifyDevice": "Gerät verifizieren",
+      "RestoreBackup": "Schlüssel-Backup einrichten/wiederherstellen"
+    },
+    "Reason": {
+      "KeyNotReceived": "Der Schlüssel für diese Nachricht wurde noch nicht empfangen",
+      "KeyWithheld": "Der Absender hält den Entschlüsselungsschlüssel zurück",
+      "KeyWithheldUnverifiedDevice": "Der Absender teilt den Schlüssel nicht, weil Ihr Gerät nicht verifiziert ist",
+      "UnknownMessageIndex": "Diese Nachricht wurde mit einem Schlüssel verschlüsselt, den dieses Gerät nicht kennt",
+      "HistoricalNoBackup": "Alte Nachricht: der Schlüssel ist nicht verfügbar, richten Sie das Schlüssel-Backup ein oder stellen Sie es wieder her",
+      "HistoricalWorkingBackup": "Alte Nachricht: das Schlüssel-Backup funktioniert, aber der Schlüssel ist noch nicht verfügbar",
+      "HistoricalNotJoined": "Diese Nachricht wurde gesendet, bevor Sie dem Raum beigetreten sind",
+      "SenderIdentityPreviouslyVerified": "Die Identität des Absenders ist nicht mehr verifiziert",
+      "UnsignedSenderDevice": "Das Gerät des Absenders ist nicht cross-signed",
+      "UnknownSenderDevice": "Das Gerät des Absenders ist unbekannt",
+      "Unknown": "Diese Nachricht kann nicht entschlüsselt werden"
+    }
   }
 }

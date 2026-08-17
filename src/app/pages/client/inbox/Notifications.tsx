@@ -335,6 +335,7 @@ function RoomNotificationsGroupComp({
                     urlPreview={urlPreview}
                     htmlReactParserOptions={htmlReactParserOptions}
                     linkifyOpts={linkifyOpts}
+                    decryptionFailureReason={mEvent.decryptionFailureReason}
                   />
                 );
               }

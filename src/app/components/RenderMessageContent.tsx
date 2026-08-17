@@ -1,5 +1,6 @@
 import React from 'react';
 import { MsgType } from 'matrix-js-sdk';
+import { DecryptionFailureCode } from 'matrix-js-sdk/lib/crypto-api';
 import { HTMLReactParserOptions } from 'html-react-parser';
 import { Opts } from 'linkifyjs';
 import { config } from 'folds';
@@ -44,6 +45,10 @@ type RenderMessageContentProps = {
   htmlReactParserOptions: HTMLReactParserOptions;
   linkifyOpts: Opts;
   outlineAttachment?: boolean;
+  decryptionFailureReason?: DecryptionFailureCode | null;
+  onRequestKey?: () => void;
+  onVerifyDevice?: () => void;
+  onRestoreBackup?: () => void;
 };
 export function RenderMessageContent({
   displayName,
@@ -57,6 +62,10 @@ export function RenderMessageContent({
   htmlReactParserOptions,
   linkifyOpts,
   outlineAttachment,
+  decryptionFailureReason,
+  onRequestKey,
+  onVerifyDevice,
+  onRestoreBackup,
 }: RenderMessageContentProps) {
   const renderUrlsPreview = (urls: string[]) => {
     const filteredUrls = urls.filter((url) => !testMatrixTo(url));
@@ -261,7 +270,14 @@ export function RenderMessageContent({
   }
 
   if (msgType === 'm.bad.encrypted') {
-    return <MBadEncrypted />;
+    return (
+      <MBadEncrypted
+        decryptionFailureReason={decryptionFailureReason}
+        onRequestKey={onRequestKey}
+        onVerifyDevice={onVerifyDevice}
+        onRestoreBackup={onRestoreBackup}
+      />
+    );
   }
 
   return <UnsupportedContent />;

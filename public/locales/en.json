@@ -3,5 +3,25 @@
     "RoomCommon": {
       "changed_room_name": " changed room name"
     }
+  },
+  "DecryptionFailure": {
+    "Action": {
+      "RequestKey": "Request key",
+      "VerifyDevice": "Verify device",
+      "RestoreBackup": "Set up / restore key backup"
+    },
+    "Reason": {
+      "KeyNotReceived": "The key for this message has not been received yet",
+      "KeyWithheld": "The sender is withholding the decryption key",
+      "KeyWithheldUnverifiedDevice": "The sender is not sharing the key because your device is not verified",
+      "UnknownMessageIndex": "This message was encrypted with a key that this device does not know",
+      "HistoricalNoBackup": "Historical message: the key is unavailable, set up or restore the key backup",
+      "HistoricalWorkingBackup": "Historical message: the key backup is working, but the key is not available yet",
+      "HistoricalNotJoined": "This message was sent before you joined the room",
+      "SenderIdentityPreviouslyVerified": "The sender's identity is no longer verified",
+      "UnsignedSenderDevice": "The sender's device is not cross-signed",
+      "UnknownSenderDevice": "The sender's device is unknown",
+      "Unknown": "This message cannot be decrypted"
+    }
   }
 }

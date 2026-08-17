@@ -389,6 +389,7 @@ export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
                       urlPreview={urlPreview}
                       htmlReactParserOptions={htmlReactParserOptions}
                       linkifyOpts={linkifyOpts}
+                      decryptionFailureReason={mEvent.decryptionFailureReason}
                     />
                   );
                 }

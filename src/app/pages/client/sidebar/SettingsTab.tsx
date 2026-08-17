@@ -1,14 +1,16 @@
-import React, { useState } from 'react';
-import { Modal, Text } from 'folds';
+import React from 'react';
+import { useAtom } from 'jotai';
+import { Text } from 'folds';
 import { SidebarItem, SidebarItemTooltip, SidebarAvatar } from '../../../components/sidebar';
 import { UserAvatar } from '../../../components/user-avatar';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { getMxIdLocalPart, mxcUrlToHttp } from '../../../utils/matrix';
 import { nameInitials } from '../../../utils/common';
 import { useMediaAuthentication } from '../../../hooks/useMediaAuthentication';
-import { Settings } from '../../../features/settings';
+import { Settings, SettingsPages } from '../../../features/settings';
 import { useUserProfile } from '../../../hooks/useUserProfile';
 import { Modal500 } from '../../../components/Modal500';
+import { settingsPageAtom } from '../../../state/settingsNav';
 import { StatusButton } from './StatusButton';
 
 export function SettingsTab() {
@@ -17,18 +19,18 @@ export function SettingsTab() {
   const userId = mx.getUserId()!;
   const profile = useUserProfile(userId);
 
-  const [settings, setSettings] = useState(false);
+  const [settingsPage, setSettingsPage] = useAtom(settingsPageAtom);
 
   const displayName = profile.displayName ?? getMxIdLocalPart(userId) ?? userId;
   const avatarUrl = profile.avatarUrl
     ? mxcUrlToHttp(mx, profile.avatarUrl, useAuthentication, 96, 96, 'crop') ?? undefined
     : undefined;
 
-  const openSettings = () => setSettings(true);
-  const closeSettings = () => setSettings(false);
+  const openSettings = () => setSettingsPage(SettingsPages.GeneralPage);
+  const closeSettings = () => setSettingsPage(null);
 
   return (
-    <SidebarItem active={settings}>
+    <SidebarItem active={settingsPage !== null}>
       <SidebarItemTooltip tooltip="User Settings">
         {(triggerRef) => (
           <div style={{ position: 'relative' }}>
@@ -43,9 +45,9 @@ export function SettingsTab() {
           </div>
         )}
       </SidebarItemTooltip>
-      {settings && (
+      {settingsPage !== null && (
         <Modal500 requestClose={closeSettings}>
-          <Settings requestClose={closeSettings} />
+          <Settings key={settingsPage} initialPage={settingsPage} requestClose={closeSettings} />
         </Modal500>
       )}
     </SidebarItem>

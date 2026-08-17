@@ -1,5 +1,6 @@
-import { Box, Icon, Icons, Text, as, color, config } from 'folds';
+import { Box, Button, Icon, Icons, Text, as, color, config } from 'folds';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 const warningStyle = { color: color.Warning.Main, opacity: config.opacity.P300 };
 const criticalStyle = { color: color.Critical.Main, opacity: config.opacity.P300 };
@@ -37,6 +38,29 @@ export const MessageBadEncryptedContent = as<'div', { children?: never }>(({ ...
     <i>Unable to decrypt message</i>
   </Box>
 ));
+
+type MessageDecryptionFailedContentProps = {
+  reasonKey: string;
+  actionLabelKey?: string;
+  onAction?: () => void;
+};
+
+export const MessageDecryptionFailedContent = as<'div', MessageDecryptionFailedContentProps>(
+  ({ reasonKey, actionLabelKey, onAction, ...props }, ref) => {
+    const { t } = useTranslation();
+    return (
+      <Box as="span" alignItems="Center" gap="200" style={warningStyle} {...props} ref={ref}>
+        <Icon size="50" src={Icons.Lock} />
+        <i>{t(reasonKey)}</i>
+        {actionLabelKey && onAction && (
+          <Button size="300" variant="Primary" fill="Soft" radii="300" onClick={onAction}>
+            <Text size="B300">{t(actionLabelKey)}</Text>
+          </Button>
+        )}
+      </Box>
+    );
+  }
+);
 
 export const MessageNotDecryptedContent = as<'div', { children?: never }>(({ ...props }, ref) => (
   <Box as="span" alignItems="Center" gap="100" style={warningStyle} {...props} ref={ref}>

@@ -1,13 +1,18 @@
 import React, { CSSProperties, ReactNode } from 'react';
 import { Box, Chip, Icon, Icons, Text, toRem } from 'folds';
 import { IContent } from 'matrix-js-sdk';
+import { DecryptionFailureCode } from 'matrix-js-sdk/lib/crypto-api';
 import { JUMBO_EMOJI_REG, URL_REG } from '../../utils/regex';
 import { trimReplyFromBody } from '../../utils/room';
+import {
+  getDecryptionFailureActionLabelKey,
+  getDecryptionFailureReason,
+} from '../../utils/decryptionFailure';
 import { MessageTextBody } from './layout';
 import {
-  MessageBadEncryptedContent,
   MessageBrokenContent,
   MessageDeletedContent,
+  MessageDecryptionFailedContent,
   MessageEditedContent,
   MessageUnsupportedContent,
 } from './content';
@@ -30,10 +35,49 @@ import { parseGeoUri, scaleYDimension } from '../../utils/common';
 import { Attachment, AttachmentBox, AttachmentContent, AttachmentHeader } from './attachment';
 import { FileHeader, FileDownloadButton } from './FileHeader';
 
-export function MBadEncrypted() {
+export function MBadEncrypted({
+  decryptionFailureReason,
+  onRequestKey,
+  onVerifyDevice,
+  onRestoreBackup,
+}: {
+  decryptionFailureReason?: DecryptionFailureCode | null;
+  onRequestKey?: () => void;
+  onVerifyDevice?: () => void;
+  onRestoreBackup?: () => void;
+}) {
+  const reason = getDecryptionFailureReason(decryptionFailureReason);
+
+  let actionLabelKey: string | undefined;
+  let onAction: (() => void) | undefined;
+  switch (reason.action) {
+    case 'requestKey':
+      actionLabelKey = onRequestKey ? getDecryptionFailureActionLabelKey('requestKey') : undefined;
+      onAction = onRequestKey;
+      break;
+    case 'verifyDevice':
+      actionLabelKey = onVerifyDevice
+        ? getDecryptionFailureActionLabelKey('verifyDevice')
+        : undefined;
+      onAction = onVerifyDevice;
+      break;
+    case 'restoreBackup':
+      actionLabelKey = onRestoreBackup
+        ? getDecryptionFailureActionLabelKey('restoreBackup')
+        : undefined;
+      onAction = onRestoreBackup;
+      break;
+    default:
+      break;
+  }
+
   return (
     <Text>
-      <MessageBadEncryptedContent />
+      <MessageDecryptionFailedContent
+        reasonKey={reason.titleKey}
+        actionLabelKey={actionLabelKey}
+        onAction={onAction}
+      />
     </Text>
   );
 }

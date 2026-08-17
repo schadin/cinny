@@ -106,6 +106,8 @@ import { GetContentCallback, MessageEvent, StateEvent } from '../../../types/mat
 import { useKeyDown } from '../../hooks/useKeyDown';
 import { useDocumentFocusChange } from '../../hooks/useDocumentFocusChange';
 import { RenderMessageContent } from '../../components/RenderMessageContent';
+import { useOpenSettingsPage } from '../../state/settingsNav';
+import { SettingsPages } from '../../features/settings';
 import { Image } from '../../components/media';
 import { ImageViewer } from '../../components/image-viewer';
 import { roomToParentsAtom } from '../../state/room/roomToParents';
@@ -433,6 +435,7 @@ const getRoomUnreadInfo = (room: Room, scrollTo = false) => {
 
 export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimelineProps) {
   const mx = useMatrixClient();
+  const openSettingsPage = useOpenSettingsPage();
   const useAuthentication = useMediaAuthentication();
   const [hideActivity] = useSetting(settingsAtom, 'hideActivity');
   const [messageLayout] = useSetting(settingsAtom, 'messageLayout');
@@ -1223,6 +1226,9 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
                       htmlReactParserOptions={htmlReactParserOptions}
                       linkifyOpts={linkifyOpts}
                       outlineAttachment={messageLayout === MessageLayout.Bubble}
+                      decryptionFailureReason={mEvent.decryptionFailureReason}
+                      onVerifyDevice={() => openSettingsPage(SettingsPages.DevicesPage)}
+                      onRestoreBackup={() => openSettingsPage(SettingsPages.DevicesPage)}
                     />
                   );
                 }
