@@ -17,6 +17,8 @@ export enum MessageLayout {
   Bubble = 2,
 }
 
+export type ReadReceiptsDisplay = 'off' | 'avatars' | 'status' | 'checkmark';
+
 export interface Settings {
   themeId?: string;
   useSystemTheme: boolean;
@@ -47,6 +49,9 @@ export interface Settings {
 
   hour24Clock: boolean;
   dateFormatString: string;
+
+  roomReadReceipts: ReadReceiptsDisplay;
+  directReadReceipts: ReadReceiptsDisplay;
 
   developerTools: boolean;
   statusPresets: StatusPreset[];
@@ -85,6 +90,9 @@ const defaultSettings: Settings = {
 
   hour24Clock: false,
   dateFormatString: 'D MMM YYYY',
+
+  roomReadReceipts: 'avatars',
+  directReadReceipts: 'avatars',
 
   developerTools: false,
   statusPresets: [],

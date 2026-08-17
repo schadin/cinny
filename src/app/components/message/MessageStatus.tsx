@@ -11,6 +11,8 @@ import { useAtomValue } from 'jotai';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { useRoomEventReaders } from '../../hooks/useRoomEventReaders';
 import { mDirectAtom } from '../../state/mDirectList';
+import { settingsAtom } from '../../state/settings';
+import { useSetting } from '../../state/hooks/settings';
 
 export type MessageStatusProps = {
   room: Room;
@@ -57,8 +59,14 @@ function MessageStatusIndicator({ room, mEvent }: MessageStatusProps) {
 export function MessageStatus({ room, mEvent }: MessageStatusProps) {
   const mx = useMatrixClient();
   const mDirects = useAtomValue(mDirectAtom);
+  const [directReadReceipts] = useSetting(settingsAtom, 'directReadReceipts');
 
-  if (mEvent.getSender() !== mx.getUserId() || !mDirects.has(room.roomId)) return null;
+  if (
+    mEvent.getSender() !== mx.getUserId() ||
+    !mDirects.has(room.roomId) ||
+    directReadReceipts !== 'checkmark'
+  )
+    return null;
 
   return <MessageStatusIndicator room={room} mEvent={mEvent} />;
 }

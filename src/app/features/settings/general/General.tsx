@@ -32,7 +32,13 @@ import FocusTrap from 'focus-trap-react';
 import { Page, PageContent, PageHeader } from '../../../components/page';
 import { SequenceCard } from '../../../components/sequence-card';
 import { useSetting } from '../../../state/hooks/settings';
-import { DateFormat, MessageLayout, MessageSpacing, settingsAtom } from '../../../state/settings';
+import {
+  DateFormat,
+  MessageLayout,
+  MessageSpacing,
+  ReadReceiptsDisplay,
+  settingsAtom,
+} from '../../../state/settings';
 import { SettingTile } from '../../../components/setting-tile';
 import { KeySymbol } from '../../../utils/key-symbol';
 import { isMacOS } from '../../../utils/user-agent';
@@ -902,6 +908,97 @@ function SelectMessageSpacing() {
   );
 }
 
+type ReadReceiptsItem = {
+  name: string;
+  value: ReadReceiptsDisplay;
+};
+
+const ROOM_READ_RECEIPTS_ITEMS: ReadReceiptsItem[] = [
+  { name: 'Avatars', value: 'avatars' },
+  { name: 'Status Message', value: 'status' },
+  { name: 'Off', value: 'off' },
+];
+
+const DIRECT_READ_RECEIPTS_ITEMS: ReadReceiptsItem[] = [
+  { name: 'Avatars', value: 'avatars' },
+  { name: 'Checkmarks', value: 'checkmark' },
+  { name: 'Status Message', value: 'status' },
+  { name: 'Off', value: 'off' },
+];
+
+function SelectReadReceipts({
+  items,
+  value,
+  onChange,
+}: {
+  items: ReadReceiptsItem[];
+  value: ReadReceiptsDisplay;
+  onChange: (value: ReadReceiptsDisplay) => void;
+}) {
+  const [menuCords, setMenuCords] = useState<RectCords>();
+
+  const handleMenu: MouseEventHandler<HTMLButtonElement> = (evt) => {
+    setMenuCords(evt.currentTarget.getBoundingClientRect());
+  };
+
+  const handleSelect = (v: ReadReceiptsDisplay) => {
+    onChange(v);
+    setMenuCords(undefined);
+  };
+
+  return (
+    <>
+      <Button
+        size="300"
+        variant="Secondary"
+        outlined
+        fill="Soft"
+        radii="300"
+        after={<Icon size="300" src={Icons.ChevronBottom} />}
+        onClick={handleMenu}
+      >
+        <Text size="T300">{items.find((i) => i.value === value)?.name ?? value}</Text>
+      </Button>
+      <PopOut
+        anchor={menuCords}
+        offset={5}
+        position="Bottom"
+        align="End"
+        content={
+          <FocusTrap
+            focusTrapOptions={{
+              initialFocus: false,
+              onDeactivate: () => setMenuCords(undefined),
+              clickOutsideDeactivates: true,
+              isKeyForward: (evt: KeyboardEvent) =>
+                evt.key === 'ArrowDown' || evt.key === 'ArrowRight',
+              isKeyBackward: (evt: KeyboardEvent) =>
+                evt.key === 'ArrowUp' || evt.key === 'ArrowLeft',
+              escapeDeactivates: stopPropagation,
+            }}
+          >
+            <Menu>
+              <Box direction="Column" gap="100" style={{ padding: config.space.S100 }}>
+                {items.map((item) => (
+                  <MenuItem
+                    key={item.value}
+                    size="300"
+                    variant={value === item.value ? 'Primary' : 'Surface'}
+                    radii="300"
+                    onClick={() => handleSelect(item.value)}
+                  >
+                    <Text size="T300">{item.name}</Text>
+                  </MenuItem>
+                ))}
+              </Box>
+            </Menu>
+          </FocusTrap>
+        }
+      />
+    </>
+  );
+}
+
 function SelectRoomSortDefault() {
   const [menuCords, setMenuCords] = useState<RectCords>();
   const [roomSortDefault, setRoomSortDefault] = useSetting(settingsAtom, 'roomSortDefault');
@@ -1062,6 +1159,46 @@ function Messages() {
   );
 }
 
+function ReadReceipts() {
+  const [roomReadReceipts, setRoomReadReceipts] = useSetting(settingsAtom, 'roomReadReceipts');
+  const [directReadReceipts, setDirectReadReceipts] = useSetting(
+    settingsAtom,
+    'directReadReceipts'
+  );
+
+  return (
+    <Box direction="Column" gap="100">
+      <Text size="L400">Read Receipts</Text>
+      <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
+        <SettingTile
+          title="In Rooms"
+          description="Show the read position of other members as avatars in the timeline."
+          after={
+            <SelectReadReceipts
+              items={ROOM_READ_RECEIPTS_ITEMS}
+              value={roomReadReceipts}
+              onChange={setRoomReadReceipts}
+            />
+          }
+        />
+      </SequenceCard>
+      <SequenceCard className={SequenceCardStyle} variant="SurfaceVariant" direction="Column">
+        <SettingTile
+          title="In Direct Chats"
+          description="Show the read position of the other member in direct chats."
+          after={
+            <SelectReadReceipts
+              items={DIRECT_READ_RECEIPTS_ITEMS}
+              value={directReadReceipts}
+              onChange={setDirectReadReceipts}
+            />
+          }
+        />
+      </SequenceCard>
+    </Box>
+  );
+}
+
 type GeneralProps = {
   requestClose: () => void;
 };
@@ -1090,6 +1227,7 @@ export function General({ requestClose }: GeneralProps) {
               <Desktop />
               <DateAndTime />
               <Editor />
+              <ReadReceipts />
               <Spaces />
               <Messages />
             </Box>

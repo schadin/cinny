@@ -64,6 +64,7 @@ import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useRecentEmoji } from '../../../hooks/useRecentEmoji';
 import * as css from './styles.css';
 import { EventReaders } from '../../../components/event-readers';
+import { ReadReceiptGroup } from '../../../components/read-receipt';
 import { TextViewer } from '../../../components/text-viewer';
 import { AsyncStatus, useAsyncCallback } from '../../../hooks/useAsyncCallback';
 import { EmojiBoard } from '../../../components/emoji-board';
@@ -677,6 +678,7 @@ export type MessageProps = {
   reply?: ReactNode;
   reactions?: ReactNode;
   hideReadReceipts?: boolean;
+  readReceiptUsers?: string[];
   showDeveloperTools?: boolean;
   memberPowerTag?: MemberPowerTag;
   accessibleTagColors?: Map<string, string>;
@@ -708,6 +710,7 @@ export const Message = as<'div', MessageProps>(
       reply,
       reactions,
       hideReadReceipts,
+      readReceiptUsers,
       showDeveloperTools,
       memberPowerTag,
       accessibleTagColors,
@@ -1147,6 +1150,14 @@ export const Message = as<'div', MessageProps>(
             {msgContentJSX}
           </ModernLayout>
         )}
+        {readReceiptUsers && readReceiptUsers.length > 0 && (
+          <ReadReceiptGroup
+            className={css.ReadReceiptMarker}
+            room={room}
+            eventId={mEvent.getId() ?? ''}
+            userIds={readReceiptUsers}
+          />
+        )}
       </MessageBase>
     );
   }
@@ -1159,6 +1170,7 @@ export type EventProps = {
   canDelete?: boolean;
   messageSpacing: MessageSpacing;
   hideReadReceipts?: boolean;
+  readReceiptUsers?: string[];
   showDeveloperTools?: boolean;
 };
 export const Event = as<'div', EventProps>(
@@ -1171,6 +1183,7 @@ export const Event = as<'div', EventProps>(
       canDelete,
       messageSpacing,
       hideReadReceipts,
+      readReceiptUsers,
       showDeveloperTools,
       children,
       ...props
@@ -1298,6 +1311,14 @@ export const Event = as<'div', EventProps>(
           </div>
         )}
         <div onContextMenu={handleContextMenu}>{children}</div>
+        {readReceiptUsers && readReceiptUsers.length > 0 && (
+          <ReadReceiptGroup
+            className={css.ReadReceiptMarker}
+            room={room}
+            eventId={mEvent.getId() ?? ''}
+            userIds={readReceiptUsers}
+          />
+        )}
       </MessageBase>
     );
   }

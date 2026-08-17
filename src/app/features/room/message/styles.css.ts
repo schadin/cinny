@@ -40,6 +40,14 @@ export const MessageMenuGroup = style({
   padding: config.space.S100,
 });
 
+export const ReadReceiptMarker = style({
+  position: 'absolute',
+  bottom: 0,
+  right: 0,
+  transform: 'translateY(50%)',
+  zIndex: 1,
+});
+
 export const MessageMenuItemText = style({
   flexGrow: 1,
 });
