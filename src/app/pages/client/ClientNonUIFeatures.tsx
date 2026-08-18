@@ -92,6 +92,7 @@ function DesktopFeatures() {
 
   const [showTrayIcon] = useSetting(settingsAtom, 'showTrayIcon');
   const [customPresets] = useSetting(settingsAtom, 'statusPresets');
+  const [statusNoticeRoomId] = useSetting(settingsAtom, 'statusNoticeRoomId');
 
   useEffect(() => {
     if (!isTauri()) return undefined;
@@ -125,7 +126,7 @@ function DesktopFeatures() {
     let disposed = false;
     const disposeFns: Array<() => void> = [];
     listenTrayStatus((preset) => {
-      setCustomStatusWithTime(mx, preset.emoji, preset.text);
+      setCustomStatusWithTime(mx, preset.emoji, preset.text, statusNoticeRoomId);
     }).then((fn) => {
       if (disposed) {
         fn();
@@ -137,7 +138,7 @@ function DesktopFeatures() {
       disposed = true;
       disposeFns.forEach((fn) => fn());
     };
-  }, [mx]);
+  }, [mx, statusNoticeRoomId]);
 
   useEffect(() => {
     if (!isTauri() || !showTrayIcon) return undefined;
