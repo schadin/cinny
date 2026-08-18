@@ -1,4 +1,4 @@
-import React, { CSSProperties, ReactNode } from 'react';
+import React, { CSSProperties, ReactNode, useState } from 'react';
 import { Box, Chip, Icon, Icons, Text, toRem } from 'folds';
 import { IContent } from 'matrix-js-sdk';
 import { DecryptionFailureCode } from 'matrix-js-sdk/lib/crypto-api';
@@ -46,14 +46,25 @@ export function MBadEncrypted({
   onVerifyDevice?: () => void;
   onRestoreBackup?: () => void;
 }) {
+  const [requested, setRequested] = useState(false);
   const reason = getDecryptionFailureReason(decryptionFailureReason);
 
   let actionLabelKey: string | undefined;
   let onAction: (() => void) | undefined;
   switch (reason.action) {
     case 'requestKey':
+      if (requested) {
+        actionLabelKey = 'DecryptionFailure.Action.KeyRequested';
+        onAction = undefined;
+        break;
+      }
       actionLabelKey = onRequestKey ? getDecryptionFailureActionLabelKey('requestKey') : undefined;
-      onAction = onRequestKey;
+      onAction = onRequestKey
+        ? () => {
+            setRequested(true);
+            onRequestKey();
+          }
+        : undefined;
       break;
     case 'verifyDevice':
       actionLabelKey = onVerifyDevice

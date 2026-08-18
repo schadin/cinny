@@ -52,11 +52,14 @@ export const MessageDecryptionFailedContent = as<'div', MessageDecryptionFailedC
       <Box as="span" alignItems="Center" gap="200" style={warningStyle} {...props} ref={ref}>
         <Icon size="50" src={Icons.Lock} />
         <i>{t(reasonKey)}</i>
-        {actionLabelKey && onAction && (
-          <Button size="300" variant="Primary" fill="Soft" radii="300" onClick={onAction}>
+        {actionLabelKey &&
+          (onAction ? (
+            <Button size="300" variant="Primary" fill="Soft" radii="300" onClick={onAction}>
+              <Text size="B300">{t(actionLabelKey)}</Text>
+            </Button>
+          ) : (
             <Text size="B300">{t(actionLabelKey)}</Text>
-          </Button>
-        )}
+          ))}
       </Box>
     );
   }

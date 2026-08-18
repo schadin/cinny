@@ -35,6 +35,7 @@ import { stopPropagation } from '../../utils/keyboard';
 import { SyncStatus } from './SyncStatus';
 import { AuthMetadataProvider } from '../../hooks/useAuthMetadata';
 import { getFallbackSession } from '../../state/sessions';
+import { clearSecretStorageKeys } from '../../../client/secretStorageKeys';
 import { AutoDiscovery } from './AutoDiscovery';
 
 function ClientRootLoading() {
@@ -128,6 +129,7 @@ const useLogoutListener = (mx?: MatrixClient) => {
     const handleLogout: HttpApiEventHandlerMap[HttpApiEvent.SessionLoggedOut] = async () => {
       mx?.stopClient();
       await mx?.clearStores();
+      clearSecretStorageKeys();
       window.localStorage.clear();
       window.location.reload();
     };

@@ -1,6 +1,10 @@
 import { createClient, MatrixClient, IndexedDBStore, IndexedDBCryptoStore } from 'matrix-js-sdk';
 
-import { cryptoCallbacks } from './secretStorageKeys';
+import {
+  cryptoCallbacks,
+  loadSecretStorageKeys,
+  clearSecretStorageKeys,
+} from './secretStorageKeys';
 import { clearNavToActivePathStore } from '../app/state/navToActivePath';
 import { pushSessionToSW } from '../sw-session';
 
@@ -12,6 +16,8 @@ type Session = {
 };
 
 export const initClient = async (session: Session): Promise<MatrixClient> => {
+  await loadSecretStorageKeys();
+
   const indexedDBStore = new IndexedDBStore({
     indexedDB: global.indexedDB,
     localStorage: global.localStorage,
@@ -63,6 +69,7 @@ export const logoutClient = async (mx: MatrixClient) => {
     // ignore if failed to logout
   }
   await mx.clearStores();
+  clearSecretStorageKeys();
   window.localStorage.clear();
   window.location.reload();
 };

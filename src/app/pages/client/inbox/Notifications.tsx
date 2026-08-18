@@ -63,6 +63,7 @@ import {
   renderMatrixMention,
 } from '../../../plugins/react-custom-html-parser';
 import { RenderMessageContent } from '../../../components/RenderMessageContent';
+import { requestRoomKey } from '../../../utils/keyRequest';
 import { useSetting } from '../../../state/hooks/settings';
 import { settingsAtom } from '../../../state/settings';
 import { Image } from '../../../components/media';
@@ -336,6 +337,7 @@ function RoomNotificationsGroupComp({
                     htmlReactParserOptions={htmlReactParserOptions}
                     linkifyOpts={linkifyOpts}
                     decryptionFailureReason={mEvent.decryptionFailureReason}
+                    onRequestKey={() => requestRoomKey(mx, mEvent)}
                   />
                 );
               }

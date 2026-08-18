@@ -53,3 +53,9 @@ export const getDecryptionFailureActionLabelKey = (action: DecryptionFailureActi
       return 'DecryptionFailure.Action.RestoreBackup';
   }
 };
+
+export const isRetryableDecryptionFailureReason = (
+  code: DecryptionFailureCode | null | undefined
+): boolean =>
+  code === DecryptionFailureCode.MEGOLM_UNKNOWN_INBOUND_SESSION_ID ||
+  code === DecryptionFailureCode.HISTORICAL_MESSAGE_WORKING_BACKUP;

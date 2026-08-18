@@ -106,6 +106,7 @@ import { GetContentCallback, MessageEvent, StateEvent } from '../../../types/mat
 import { useKeyDown } from '../../hooks/useKeyDown';
 import { useDocumentFocusChange } from '../../hooks/useDocumentFocusChange';
 import { RenderMessageContent } from '../../components/RenderMessageContent';
+import { requestRoomKey } from '../../utils/keyRequest';
 import { useOpenSettingsPage } from '../../state/settingsNav';
 import { SettingsPages } from '../../features/settings';
 import { Image } from '../../components/media';
@@ -1227,6 +1228,7 @@ export function RoomTimeline({ room, eventId, roomInputRef, editor }: RoomTimeli
                       linkifyOpts={linkifyOpts}
                       outlineAttachment={messageLayout === MessageLayout.Bubble}
                       decryptionFailureReason={mEvent.decryptionFailureReason}
+                      onRequestKey={() => requestRoomKey(mx, mEvent)}
                       onVerifyDevice={() => openSettingsPage(SettingsPages.DevicesPage)}
                       onRestoreBackup={() => openSettingsPage(SettingsPages.DevicesPage)}
                     />

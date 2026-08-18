@@ -2,6 +2,7 @@
   "DecryptionFailure": {
     "Action": {
       "RequestKey": "Запросить ключ",
+      "KeyRequested": "Ключ запрошен",
       "VerifyDevice": "Верифицировать устройство",
       "RestoreBackup": "Настроить/восстановить бэкап ключей"
     },

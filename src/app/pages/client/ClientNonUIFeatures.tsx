@@ -49,6 +49,8 @@ import {
   setStatusPresets,
 } from '../../utils/desktop';
 import { updateTrayIcon } from '../../utils/trayIcon';
+import { useRestoreBackupOnStartup } from '../../hooks/useRestoreBackupOnStartup';
+import { useRetryDecryptionOnKeyArrival } from '../../hooks/useRetryDecryptionOnKeyArrival';
 
 function CustomStatusRestore() {
   const mx = useMatrixClient();
@@ -69,6 +71,16 @@ function CustomStatusRestore() {
     };
   }, [mx]);
 
+  return null;
+}
+
+function AutoRestoreBackup() {
+  useRestoreBackupOnStartup();
+  return null;
+}
+
+function RetryDecryption() {
+  useRetryDecryptionOnKeyArrival();
   return null;
 }
 
@@ -410,6 +422,8 @@ export function ClientNonUIFeatures({ children }: ClientNonUIFeaturesProps) {
       <InviteNotifications />
       <MessageNotifications />
       <CustomStatusRestore />
+      <AutoRestoreBackup />
+      <RetryDecryption />
       <DesktopFeatures />
       {children}
     </>

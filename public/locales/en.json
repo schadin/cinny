@@ -7,6 +7,7 @@
   "DecryptionFailure": {
     "Action": {
       "RequestKey": "Request key",
+      "KeyRequested": "Key requested",
       "VerifyDevice": "Verify device",
       "RestoreBackup": "Set up / restore key backup"
     },

@@ -61,6 +61,7 @@ import {
 } from '../../../plugins/react-custom-html-parser';
 import { RenderMatrixEvent, useMatrixEventRenderer } from '../../../hooks/useMatrixEventRenderer';
 import { RenderMessageContent } from '../../../components/RenderMessageContent';
+import { requestRoomKey } from '../../../utils/keyRequest';
 import { useSetting } from '../../../state/hooks/settings';
 import { settingsAtom } from '../../../state/settings';
 import * as customHtmlCss from '../../../styles/CustomHtml.css';
@@ -390,6 +391,7 @@ export const RoomPinMenu = forwardRef<HTMLDivElement, RoomPinMenuProps>(
                       htmlReactParserOptions={htmlReactParserOptions}
                       linkifyOpts={linkifyOpts}
                       decryptionFailureReason={mEvent.decryptionFailureReason}
+                      onRequestKey={() => requestRoomKey(mx, mEvent)}
                     />
                   );
                 }
