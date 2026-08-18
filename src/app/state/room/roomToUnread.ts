@@ -64,13 +64,6 @@ const putUnreadInfo = (
   const newH = unreadInfo.highlight - oldUnread.highlight;
   const newT = unreadInfo.total - oldUnread.total;
 
-  console.log('[unread-debug] ATOM PUT', {
-    roomId: unreadInfo.roomId,
-    oldTotal: oldUnread.total,
-    newTotal: unreadInfo.total,
-    delta: newT,
-    parents: Array.from(allParents),
-  });
   allParents.forEach((parentId) => {
     const oldParentUnread = roomToUnread.get(parentId) ?? { highlight: 0, total: 0, from: null };
     roomToUnread.set(parentId, {
@@ -78,29 +71,13 @@ const putUnreadInfo = (
       total: (oldParentUnread.total += newT),
       from: new Set([...(oldParentUnread.from ?? []), unreadInfo.roomId]),
     });
-    console.log('[unread-debug]   parent', {
-      parentId,
-      total: roomToUnread.get(parentId)?.total,
-      from: Array.from(roomToUnread.get(parentId)?.from ?? []),
-    });
   });
 };
 
 const deleteUnreadInfo = (roomToUnread: RoomToUnread, allParents: Set<string>, roomId: string) => {
   const oldUnread = roomToUnread.get(roomId);
-  if (!oldUnread) {
-    console.log('[unread-debug] ATOM DELETE skip (room not in atom)', {
-      roomId,
-      parents: Array.from(allParents),
-    });
-    return;
-  }
+  if (!oldUnread) return;
   roomToUnread.delete(roomId);
-  console.log('[unread-debug] ATOM DELETE', {
-    roomId,
-    oldTotal: oldUnread.total,
-    parents: Array.from(allParents),
-  });
 
   allParents.forEach((parentId) => {
     const oldParentUnread = roomToUnread.get(parentId);
@@ -109,22 +86,12 @@ const deleteUnreadInfo = (roomToUnread: RoomToUnread, allParents: Set<string>, r
     newFrom.delete(roomId);
     if (newFrom.size === 0) {
       roomToUnread.delete(parentId);
-      console.log('[unread-debug]   parent removed', {
-        parentId,
-        oldParentTotal: oldParentUnread.total,
-      });
       return;
     }
     roomToUnread.set(parentId, {
       highlight: oldParentUnread.highlight - oldUnread.highlight,
       total: oldParentUnread.total - oldUnread.total,
       from: newFrom,
-    });
-    console.log('[unread-debug]   parent after delete', {
-      parentId,
-      oldParentTotal: oldParentUnread.total,
-      total: roomToUnread.get(parentId)?.total,
-      from: Array.from(newFrom),
     });
   });
 };
@@ -163,14 +130,6 @@ export const roomToUnreadAtom = atom<RoomToUnread, [RoomToUnreadAction], undefin
           getAllParents(get(roomToParentsAtom), unreadInfo.roomId),
           unreadInfo
         );
-      });
-      console.log('[unread-debug] ATOM RESET', {
-        rooms: action.unreadInfos.map((u) => ({ roomId: u.roomId, total: u.total })),
-        entries: Array.from(draftRoomToUnread.entries()).map(([id, v]) => ({
-          roomId: id,
-          total: v.total,
-          from: Array.from(v.from ?? []),
-        })),
       });
       set(baseRoomToUnread, draftRoomToUnread);
       return;
@@ -252,13 +211,6 @@ export const useBindRoomToUnreadAtom = (mx: MatrixClient, unreadAtom: typeof roo
       }
       const unreadInfo = getUnreadInfo(room);
       const isUnread = roomIsUnread(mx, room);
-      console.log('[unread-debug] RECOMPUTE', {
-        roomId: room.roomId,
-        isSpace: room.isSpaceRoom(),
-        isUnread,
-        total: unreadInfo.total,
-        action: isUnread ? 'PUT' : 'DELETE',
-      });
       if (isUnread) {
         setUnreadAtom({ type: 'PUT', unreadInfo });
         return;
