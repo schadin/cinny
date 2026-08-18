@@ -58,7 +58,7 @@ import {
   SidebarFolder,
   SidebarFolderDropTarget,
 } from '../../../components/sidebar';
-import { RoomUnreadProvider, RoomsUnreadProvider } from '../../../components/RoomUnreadProvider';
+import { RoomsUnreadProvider } from '../../../components/RoomUnreadProvider';
 import { useSelectedSpace } from '../../../hooks/router/useSelectedSpace';
 import { UnreadBadge } from '../../../components/unread-badge';
 import { getCanonicalAliasOrRoomId, isRoomAlias } from '../../../utils/matrix';
@@ -404,6 +404,13 @@ function SpaceTab({
   const useAuthentication = useMediaAuthentication();
   const targetRef = useRef<HTMLDivElement>(null);
 
+  const roomToParents = useAtomValue(roomToParentsAtom);
+  const allChild = useSpaceChildren(
+    allRoomsAtom,
+    space.roomId,
+    useRecursiveChildScopeFactory(mx, roomToParents)
+  );
+
   const spaceDraggable: SidebarDraggable = useMemo(
     () =>
       folder
@@ -431,7 +438,7 @@ function SpaceTab({
   };
 
   return (
-    <RoomUnreadProvider roomId={space.roomId}>
+    <RoomsUnreadProvider rooms={allChild}>
       {(unread) => (
         <SidebarItem
           active={selected}
@@ -496,7 +503,7 @@ function SpaceTab({
           )}
         </SidebarItem>
       )}
-    </RoomUnreadProvider>
+    </RoomsUnreadProvider>
   );
 }
 

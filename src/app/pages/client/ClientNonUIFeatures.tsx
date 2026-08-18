@@ -131,7 +131,8 @@ function DesktopFeatures() {
     if (!isTauri() || !showTrayIcon) return undefined;
     let total = 0;
     let highlight = 0;
-    roomToUnread.forEach((unread) => {
+    roomToUnread.forEach((unread, roomId) => {
+      if (mx.getRoom(roomId)?.isSpaceRoom()) return;
       total += unread.total;
       highlight += unread.highlight;
     });
@@ -140,7 +141,7 @@ function DesktopFeatures() {
       updateTrayIcon(emoji || null, { total, highlight });
     }, 100);
     return () => clearTimeout(timer);
-  }, [currentStatus, roomToUnread, showTrayIcon]);
+  }, [currentStatus, roomToUnread, showTrayIcon, mx]);
 
   return null;
 }
@@ -170,12 +171,14 @@ function PageZoomFeature() {
 }
 
 function FaviconUpdater() {
+  const mx = useMatrixClient();
   const roomToUnread = useAtomValue(roomToUnreadAtom);
 
   useEffect(() => {
     let notification = false;
     let highlight = false;
-    roomToUnread.forEach((unread) => {
+    roomToUnread.forEach((unread, roomId) => {
+      if (mx.getRoom(roomId)?.isSpaceRoom()) return;
       if (unread.total > 0) {
         notification = true;
       }
@@ -189,7 +192,7 @@ function FaviconUpdater() {
     } else {
       setFavicon(LogoSVG);
     }
-  }, [roomToUnread]);
+  }, [roomToUnread, mx]);
 
   return null;
 }
