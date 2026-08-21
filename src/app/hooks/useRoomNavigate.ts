@@ -9,7 +9,7 @@ import {
   getSpaceRoomPath,
 } from '../pages/pathUtils';
 import { useMatrixClient } from './useMatrixClient';
-import { getOrphanParents, guessPerfectParent } from '../utils/room';
+import { getAllParents, getOrphanParents, guessPerfectParent } from '../utils/room';
 import { roomToParentsAtom } from '../state/room/roomToParents';
 import { mDirectAtom } from '../state/mDirectList';
 import { useSelectedSpace } from './router/useSelectedSpace';
@@ -37,14 +37,16 @@ export const useRoomNavigate = () => {
       const roomIdOrAlias = getCanonicalAliasOrRoomId(mx, roomId);
       const openSpaceTimeline = developerTools && spaceSelectedId === roomId;
 
+      const allParents = openSpaceTimeline ? undefined : getAllParents(roomToParents, roomId);
+      if (!openSpaceTimeline && spaceSelectedId && allParents?.has(spaceSelectedId)) {
+        const pSpaceIdOrAlias = getCanonicalAliasOrRoomId(mx, spaceSelectedId);
+        navigate(getSpaceRoomPath(pSpaceIdOrAlias, roomIdOrAlias, eventId), opts);
+        return;
+      }
+
       const orphanParents = openSpaceTimeline ? [roomId] : getOrphanParents(roomToParents, roomId);
       if (orphanParents.length > 0) {
-        let parentSpace: string;
-        if (spaceSelectedId && orphanParents.includes(spaceSelectedId)) {
-          parentSpace = spaceSelectedId;
-        } else {
-          parentSpace = guessPerfectParent(mx, roomId, orphanParents) ?? orphanParents[0];
-        }
+        const parentSpace = guessPerfectParent(mx, roomId, orphanParents) ?? orphanParents[0];
 
         const pSpaceIdOrAlias = getCanonicalAliasOrRoomId(mx, parentSpace);
 
