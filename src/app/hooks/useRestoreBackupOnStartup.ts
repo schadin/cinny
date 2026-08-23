@@ -10,13 +10,19 @@ export const useRestoreBackupOnStartup = () => {
   const setRestoreProgress = useSetAtom(backupRestoreProgressAtom);
   const restoreProgress = useAtomValue(backupRestoreProgressAtom);
   const restoringRef = useRef(false);
+  const attemptedRef = useRef(false);
+  const progressStatusRef = useRef(restoreProgress.status);
+
+  useEffect(() => {
+    progressStatusRef.current = restoreProgress.status;
+  }, [restoreProgress.status]);
 
   const restoreBackup = useCallback(async () => {
-    if (restoringRef.current) return;
+    if (restoringRef.current || attemptedRef.current) return;
     const crypto = mx.getCrypto();
     if (!crypto) return;
 
-    const progressStatus = restoreProgress.status;
+    const progressStatus = progressStatusRef.current;
     if (
       progressStatus === BackupProgressStatus.Fetching ||
       progressStatus === BackupProgressStatus.Loading ||
@@ -26,6 +32,7 @@ export const useRestoreBackupOnStartup = () => {
     }
 
     restoringRef.current = true;
+    attemptedRef.current = true;
     try {
       await crypto.bootstrapSecretStorage({});
       await crypto.loadSessionBackupPrivateKeyFromSecretStorage();
@@ -39,10 +46,12 @@ export const useRestoreBackupOnStartup = () => {
     } finally {
       restoringRef.current = false;
     }
-  }, [mx, restoreProgress.status, setRestoreProgress]);
+  }, [mx, setRestoreProgress]);
 
   useKeyBackupDecryptionKeyCached(
     useCallback(() => {
+      // ключ бэкапа появился — разрешаем одну новую попытку
+      attemptedRef.current = false;
       restoreBackup();
     }, [restoreBackup])
   );
