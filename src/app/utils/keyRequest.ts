@@ -1,4 +1,4 @@
-import { EventType, MatrixClient, MatrixEvent } from 'matrix-js-sdk';
+import { EventType, MatrixClient, MatrixEvent, SendToDeviceContentMap } from 'matrix-js-sdk';
 
 const KEY_REQUEST_COOLDOWN_MS = 60_000;
 
@@ -26,7 +26,7 @@ export const requestRoomKey = async (mx: MatrixClient, mEvent: MatrixEvent): Pro
   const recipients = mEvent.getKeyRequestRecipients(senderId);
   const requestId = makeRequestId();
   const body = { algorithm, room_id: roomId, sender_key: senderKey, session_id: sessionId };
-  const contentMap = recipients.reduce<Record<string, Record<string, unknown>>>(
+  const contentMap = recipients.reduce<Record<string, Record<string, Record<string, unknown>>>>(
     (acc, recipient) => {
       const deviceMap = acc[recipient.userId] ?? {};
       deviceMap[recipient.deviceId] = { action: 'request', request_id: requestId, body };
@@ -35,6 +35,6 @@ export const requestRoomKey = async (mx: MatrixClient, mEvent: MatrixEvent): Pro
     {}
   );
 
-  await mx.sendToDevice(EventType.RoomKeyRequest, contentMap);
+  await mx.sendToDevice(EventType.RoomKeyRequest, contentMap as unknown as SendToDeviceContentMap);
   keyRequestSentAt.set(eventId, Date.now());
 };

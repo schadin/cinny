@@ -69,7 +69,15 @@ export const selectFile = <M extends boolean | undefined = undefined>(
 
     let settled = false;
 
-    const changeHandler = () => {
+    function cleanup() {
+      settled = true;
+      input.removeEventListener('change', changeHandler);
+      input.removeEventListener('cancel', cancelHandler);
+      window.removeEventListener('focus', focusHandler);
+      input.remove();
+    }
+
+    function changeHandler() {
       const fileList = input.files;
       if (!fileList) {
         resolve(undefined);
@@ -78,29 +86,21 @@ export const selectFile = <M extends boolean | undefined = undefined>(
         resolve((multiple ? files : files[0]) as FilesOrFile<M>);
       }
       cleanup();
-    };
+    }
 
-    const cancelHandler = () => {
+    function cancelHandler() {
       resolve(undefined);
       cleanup();
-    };
+    }
 
-    const focusHandler = () => {
+    function focusHandler() {
       if (settled) return;
       window.setTimeout(() => {
         if (settled) return;
         resolve(undefined);
         cleanup();
       }, 300);
-    };
-
-    const cleanup = () => {
-      settled = true;
-      input.removeEventListener('change', changeHandler);
-      input.removeEventListener('cancel', cancelHandler);
-      window.removeEventListener('focus', focusHandler);
-      input.remove();
-    };
+    }
 
     input.addEventListener('change', changeHandler);
     input.addEventListener('cancel', cancelHandler);

@@ -6,18 +6,7 @@ import React, {
   useRef,
   useState,
 } from 'react';
-import {
-  Box,
-  Button,
-  color,
-  config,
-  Icon,
-  Icons,
-  Input,
-  PopOut,
-  RectCords,
-  Text,
-} from 'folds';
+import { Box, Button, color, config, Icon, Icons, Input, PopOut, RectCords, Text } from 'folds';
 import { SequenceCard } from '../../../components/sequence-card';
 import { SequenceCardStyle } from '../styles.css';
 import { SettingTile } from '../../../components/setting-tile';
@@ -99,10 +88,7 @@ export function StatusEditor() {
       const removed = customPresets[index];
       if (!removed) return;
       setCustomPresets(customPresets.filter((_, i) => i !== index));
-      if (
-        currentEmoji === removed.emoji &&
-        stripTimeSuffix(currentText) === removed.text
-      ) {
+      if (currentEmoji === removed.emoji && stripTimeSuffix(currentText) === removed.text) {
         clearCustomStatus(mx);
       }
       setConfirmingDeleteIndex(null);
@@ -121,15 +107,12 @@ export function StatusEditor() {
     [confirmingDeleteIndex, handleRemovePreset]
   );
 
-  const handleEditStart = useCallback(
-    (customIndex: number, preset: StatusPreset) => {
-      setEditingIndex(customIndex);
-      setEditEmoji(preset.emoji);
-      setEditText(preset.text);
-      setConfirmingDeleteIndex(null);
-    },
-    []
-  );
+  const handleEditStart = useCallback((customIndex: number, preset: StatusPreset) => {
+    setEditingIndex(customIndex);
+    setEditEmoji(preset.emoji);
+    setEditText(preset.text);
+    setConfirmingDeleteIndex(null);
+  }, []);
 
   const handleEditSave = useCallback(() => {
     if (!editEmoji || editingIndex === null) return;
@@ -146,7 +129,17 @@ export function StatusEditor() {
       setCustomStatusWithTime(mx, newEmoji, newText, statusNoticeRoomId);
     }
     setEditingIndex(null);
-  }, [editEmoji, editText, editingIndex, customPresets, setCustomPresets, currentEmoji, currentText, mx, statusNoticeRoomId]);
+  }, [
+    editEmoji,
+    editText,
+    editingIndex,
+    customPresets,
+    setCustomPresets,
+    currentEmoji,
+    currentText,
+    mx,
+    statusNoticeRoomId,
+  ]);
 
   const handleEditCancel = useCallback(() => {
     setEditingIndex(null);
@@ -168,7 +161,7 @@ export function StatusEditor() {
         if (isCustom && editingIndex === customIndex) {
           return (
             <Box
-              key={`${preset.emoji}-${preset.text}-${idx}`}
+              key={`${preset.emoji}-${preset.text}`}
               direction="Column"
               gap="200"
               style={{ padding: config.space.S200 }}
@@ -221,7 +214,9 @@ export function StatusEditor() {
                     value={editText}
                     onChange={
                       ((evt) =>
-                        setEditText(evt.currentTarget.value)) as ChangeEventHandler<HTMLInputElement>
+                        setEditText(
+                          evt.currentTarget.value
+                        )) as ChangeEventHandler<HTMLInputElement>
                     }
                     variant="Secondary"
                     radii="300"
@@ -258,7 +253,7 @@ export function StatusEditor() {
 
         return (
           <Box
-            key={`${preset.emoji}-${preset.text}-${idx}`}
+            key={`${preset.emoji}-${preset.text}`}
             gap="200"
             alignItems="Center"
             style={{
@@ -279,9 +274,7 @@ export function StatusEditor() {
                 {preset.text}
               </Text>
             </Box>
-            {active && (
-              <Icon size="50" src={Icons.Check} />
-            )}
+            {active && <Icon size="50" src={Icons.Check} />}
             {isCustom && (
               <>
                 <Box
@@ -308,22 +301,24 @@ export function StatusEditor() {
                   style={{
                     cursor: 'pointer',
                     border: 'none',
-                    background: confirmingDeleteIndex === customIndex
-                      ? color.Critical.Container
-                      : 'transparent',
-                    color: confirmingDeleteIndex === customIndex
-                      ? color.Critical.OnContainer
-                      : 'inherit',
+                    background:
+                      confirmingDeleteIndex === customIndex
+                        ? color.Critical.Container
+                        : 'transparent',
+                    color:
+                      confirmingDeleteIndex === customIndex
+                        ? color.Critical.OnContainer
+                        : 'inherit',
                     fontFamily: 'inherit',
                     fontSize: 'inherit',
                     lineHeight: 1,
                     padding: '2px 6px',
-                    borderRadius: config.radii.R200,
+                    borderRadius: config.radii.R300,
                     whiteSpace: 'nowrap',
                   }}
                 >
                   {confirmingDeleteIndex === customIndex ? (
-                    <Text size="B200">Delete?</Text>
+                    <Text size="B300">Delete?</Text>
                   ) : (
                     <Icon size="50" src={Icons.Delete} />
                   )}
@@ -481,8 +476,7 @@ export function ProfileStatus() {
           }
           description={
             <Text size="T200" priority="300">
-              Room ID to send an m.notice message when your status changes. Leave empty to
-              disable.
+              Room ID to send an m.notice message when your status changes. Leave empty to disable.
             </Text>
           }
         >

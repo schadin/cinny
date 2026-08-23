@@ -1,4 +1,10 @@
-import { createClient, MatrixClient, IndexedDBStore, IndexedDBCryptoStore } from 'matrix-js-sdk';
+import {
+  createClient,
+  MatrixClient,
+  IndexedDBStore,
+  IndexedDBCryptoStore,
+  SetPresence,
+} from 'matrix-js-sdk';
 
 import {
   cryptoCallbacks,
@@ -47,7 +53,7 @@ export const initClient = async (session: Session): Promise<MatrixClient> => {
 };
 
 export const startClient = async (mx: MatrixClient) => {
-  mx.setSyncPresence('online');
+  mx.setSyncPresence(SetPresence.Online);
   await mx.startClient({
     lazyLoadMembers: true,
   });

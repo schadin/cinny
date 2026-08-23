@@ -1,13 +1,5 @@
 import React from 'react';
-import {
-  Badge,
-  Box,
-  Text,
-  Tooltip,
-  TooltipProvider,
-  MainColor,
-  toRem,
-} from 'folds';
+import { Badge, Box, Text, Tooltip, TooltipProvider, MainColor } from 'folds';
 import { Presence, usePresenceLabel } from '../../hooks/useUserPresence';
 import type { UserPresence } from '../../hooks/useUserPresence';
 import { getLastActiveLabel } from '../../utils/lastActive';
@@ -41,13 +33,7 @@ export function PresenceStatus({ presence }: PresenceStatusProps) {
       }
     >
       {(triggerRef) => (
-        <Box
-          ref={triggerRef}
-          as="span"
-          alignItems="Center"
-          gap="100"
-          style={{ cursor: 'pointer' }}
-        >
+        <Box ref={triggerRef} as="span" alignItems="Center" gap="100" style={{ cursor: 'pointer' }}>
           <Badge
             size="200"
             variant={PresenceToColor[presence.presence]}

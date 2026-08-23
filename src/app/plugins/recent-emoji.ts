@@ -1,4 +1,4 @@
-import { MatrixClient } from 'matrix-js-sdk';
+import { MatrixClient, WritableAccountDataEvents } from 'matrix-js-sdk';
 import { getAccountData } from '../utils/room';
 import { IEmoji, emojis } from './emoji';
 import { AccountDataEvent } from '../../types/matrix/accountData';
@@ -42,7 +42,7 @@ export function addRecentEmoji(mx: MatrixClient, unicode: string) {
     entry[1] += 1;
   }
   recentEmoji.unshift(entry);
-  mx.setAccountData(AccountDataEvent.ElementRecentEmoji, {
+  mx.setAccountData(AccountDataEvent.ElementRecentEmoji as keyof WritableAccountDataEvents, {
     recent_emoji: recentEmoji.slice(0, 100),
   });
 }

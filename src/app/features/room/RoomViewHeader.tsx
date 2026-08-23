@@ -37,7 +37,12 @@ import { useSetting } from '../../state/hooks/settings';
 import { settingsAtom } from '../../state/settings';
 import { useSpaceOptionally } from '../../hooks/useSpace';
 import { getHomeSearchPath, getSpaceSearchPath, withSearchParam } from '../../pages/pathUtils';
-import { getCanonicalAliasOrRoomId, guessDmRoomUserId, isRoomAlias, mxcUrlToHttp } from '../../utils/matrix';
+import {
+  getCanonicalAliasOrRoomId,
+  guessDmRoomUserId,
+  isRoomAlias,
+  mxcUrlToHttp,
+} from '../../utils/matrix';
 import { useCustomStatus } from '../../hooks/useCustomStatus';
 import { _SearchPathSearchParams } from '../../pages/paths';
 import * as css from './RoomViewHeader.css';
@@ -341,7 +346,7 @@ function CallButton() {
             fill="None"
             ref={triggerRef}
             onClick={handleOpenMenu}
-            onContextMenu={(evt) => {
+            onContextMenu={(evt: React.MouseEvent<HTMLElement>) => {
               evt.preventDefault();
               startCall(room, {
                 microphone: true,
@@ -483,7 +488,9 @@ export function RoomViewHeader({ callView }: { callView?: boolean }) {
               <Text size={topic ? 'H5' : 'H3'} truncate>
                 {name}
               </Text>
-              {direct && dmStatus?.emoji && <Text size={topic ? 'H5' : 'H3'}>{dmStatus.emoji}</Text>}
+              {direct && dmStatus?.emoji && (
+                <Text size={topic ? 'H5' : 'H3'}>{dmStatus.emoji}</Text>
+              )}
             </Box>
             {direct && dmStatus?.text && (
               <Text size="T200" priority="300" truncate>

@@ -25,7 +25,7 @@ import {
   toRem,
 } from 'folds';
 import { useAtom, useAtomValue } from 'jotai';
-import { Room } from 'matrix-js-sdk';
+import { Room, WritableAccountDataEvents } from 'matrix-js-sdk';
 import {
   draggable,
   dropTargetForElements,
@@ -753,7 +753,10 @@ export function SpaceTabs({ scrollRef }: SpaceTabsProps) {
 
         const newSpacesContent = makeCinnySpacesContent(mx, newItems);
         localEchoSidebarItem(parseSidebar(mx, orphanSpaces, newSpacesContent));
-        mx.setAccountData(AccountDataEvent.CinnySpaces, newSpacesContent);
+        mx.setAccountData(
+          AccountDataEvent.CinnySpaces as keyof WritableAccountDataEvents,
+          newSpacesContent
+        );
       },
       [mx, sidebarItems, setOpenedFolder, localEchoSidebarItem, orphanSpaces]
     )
@@ -799,7 +802,10 @@ export function SpaceTabs({ scrollRef }: SpaceTabsProps) {
 
       const newSpacesContent = makeCinnySpacesContent(mx, newItems);
       localEchoSidebarItem(parseSidebar(mx, orphanSpaces, newSpacesContent));
-      mx.setAccountData(AccountDataEvent.CinnySpaces, newSpacesContent);
+      mx.setAccountData(
+        AccountDataEvent.CinnySpaces as keyof WritableAccountDataEvents,
+        newSpacesContent
+      );
     },
     [mx, sidebarItems, orphanSpaces, localEchoSidebarItem]
   );

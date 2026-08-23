@@ -10,7 +10,6 @@ export const getLastActiveLabel = (lastActiveTs?: number): string | undefined =>
 
   const now = dayjs();
   const ts = dayjs(lastActiveTs);
-  const diffSeconds = now.diff(ts, 'second');
   const diffMinutes = now.diff(ts, 'minute');
   const diffHours = now.diff(ts, 'hour');
 

@@ -1,5 +1,6 @@
 import { useAtomValue, useSetAtom } from 'jotai';
 import { useCallback, useMemo } from 'react';
+import { WritableAccountDataEvents } from 'matrix-js-sdk';
 import { AccountDataEvent, RoomSortType, SpacesSortContent } from '../../types/matrix/accountData';
 import { getAccountData } from '../utils/room';
 import { SortFunc, factoryRoomIdSort } from '../utils/sort';
@@ -41,7 +42,10 @@ export const useSetSpaceRoomSort = () => {
         getAccountData(mx, AccountDataEvent.SpacesSort)?.getContent<SpacesSortContent>() ?? {};
       const newContent: SpacesSortContent = { ...currentContent, [spaceId]: sortType };
       setSpaceSort({ type: 'UPDATE', spacesSort: newContent });
-      await mx.setAccountData(AccountDataEvent.SpacesSort, newContent);
+      await mx.setAccountData(
+        AccountDataEvent.SpacesSort as keyof WritableAccountDataEvents,
+        newContent
+      );
     },
     [mx, setSpaceSort]
   );

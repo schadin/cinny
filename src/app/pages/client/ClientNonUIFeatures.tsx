@@ -64,7 +64,8 @@ function CustomStatusRestore() {
     };
 
     mx.on(ClientEvent.Sync, handleSync);
-    handleSync(mx.getSyncState());
+    const currentState = mx.getSyncState();
+    if (currentState) handleSync(currentState, mx.getSyncState());
 
     return () => {
       mx.removeListener(ClientEvent.Sync, handleSync);

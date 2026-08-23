@@ -1,4 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
+import { WritableAccountDataEvents } from 'matrix-js-sdk';
 import { ImagePackContent } from './ImagePackContent';
 import { ImagePack, PackContent } from '../../plugins/custom-emoji';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
@@ -13,7 +14,10 @@ export function UserImagePack() {
 
   const handleUpdate = useCallback(
     async (packContent: PackContent) => {
-      await mx.setAccountData(AccountDataEvent.PoniesUserEmotes, packContent);
+      await mx.setAccountData(
+        AccountDataEvent.PoniesUserEmotes as keyof WritableAccountDataEvents,
+        packContent
+      );
     },
     [mx]
   );

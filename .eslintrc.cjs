@@ -21,7 +21,8 @@ module.exports = {
     sourceType: 'module',
   },
   "globals": {
-    JSX: "readonly"
+    JSX: "readonly",
+    __CINNY_VERSION__: "readonly"
   },
   plugins: [
     'react',
@@ -30,7 +31,8 @@ module.exports = {
   rules: {
     'linebreak-style': 0,
     'no-underscore-dangle': 0,
-    "no-shadow": "off",
+    'no-shadow': 'off',
+    'no-use-before-define': ['error', { functions: false, classes: true, variables: true }],
 
     "import/prefer-default-export": "off",
     "import/extensions": "off",
@@ -59,6 +61,7 @@ module.exports = {
     "react-hooks/exhaustive-deps": "error",
 
     "@typescript-eslint/no-unused-vars": "error",
+    "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/no-shadow": "error"
   },
   overrides: [
@@ -66,6 +69,15 @@ module.exports = {
       files: ['*.ts'],
       rules: {
         'no-undef': 'off',
+      },
+    },
+    {
+      files: ['src/util/cryptE2ERoomKeys.js'],
+      rules: {
+        'no-bitwise': 'off',
+        'no-plusplus': 'off',
+        'prefer-template': 'off',
+        'no-param-reassign': 'off',
       },
     },
   ],

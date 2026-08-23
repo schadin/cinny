@@ -246,7 +246,7 @@ export function LobbyHeader({ showProfile, powerLevels }: LobbyHeaderProps) {
             {(triggerRef) => (
               <IconButton
                 fill="None"
-                onClick={(evt) =>
+                onClick={(evt: React.MouseEvent<HTMLButtonElement>) =>
                   setSortMenuAnchor((current) =>
                     current ? undefined : evt.currentTarget.getBoundingClientRect()
                   )

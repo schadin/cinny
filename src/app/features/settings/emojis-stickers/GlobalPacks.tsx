@@ -23,7 +23,7 @@ import {
 } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { useAtomValue } from 'jotai';
-import { Room } from 'matrix-js-sdk';
+import { Room, WritableAccountDataEvents } from 'matrix-js-sdk';
 import { useGlobalImagePacks, useRoomsImagePacks } from '../../../hooks/useImagePacks';
 import { SequenceCardStyle } from '../styles.css';
 import { SequenceCard } from '../../../components/sequence-card';
@@ -139,7 +139,7 @@ function GlobalPackSelector({
               if (!room) return null;
               const roomPackAddresses = roomPacks
                 .map((pack) => pack.address)
-                .filter((addr) => addr !== undefined);
+                .filter((addr): addr is PackAddress => addr !== undefined);
               const allSelected = roomPackAddresses.every((addr) =>
                 selected.find((address) => packAddressEqual(addr, address))
               );
@@ -303,7 +303,9 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
   const [applyState, applyChanges] = useAsyncCallback(
     useCallback(async () => {
       const content =
-        mx.getAccountData(AccountDataEvent.PoniesEmoteRooms)?.getContent<EmoteRoomsContent>() ?? {};
+        mx
+          .getAccountData(AccountDataEvent.PoniesEmoteRooms as keyof WritableAccountDataEvents)
+          ?.getContent<EmoteRoomsContent>() ?? {};
       const updatedContent: EmoteRoomsContent = JSON.parse(JSON.stringify(content));
 
       selectedPacks.forEach((addr) => {
@@ -320,7 +322,10 @@ export function GlobalPacks({ onViewPack }: GlobalPacksProps) {
         }
       });
 
-      await mx.setAccountData(AccountDataEvent.PoniesEmoteRooms, updatedContent);
+      await mx.setAccountData(
+        AccountDataEvent.PoniesEmoteRooms as keyof WritableAccountDataEvents,
+        updatedContent
+      );
     }, [mx, selectedPacks, removedPacks])
   );
 

@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo } from 'react';
 import { Room } from 'matrix-js-sdk';
+import type { StateEvents } from 'matrix-js-sdk/lib/@types/event';
 import { usePowerLevels } from '../../hooks/usePowerLevels';
 import { useMatrixClient } from '../../hooks/useMatrixClient';
 import { ImagePackContent } from './ImagePackContent';
@@ -44,8 +45,8 @@ export function RoomImagePack({ room, stateKey }: RoomImagePackProps) {
 
       await mx.sendStateEvent(
         address.roomId,
-        StateEvent.PoniesRoomEmotes,
-        packContent,
+        StateEvent.PoniesRoomEmotes as unknown as keyof StateEvents,
+        packContent as unknown as StateEvents[keyof StateEvents],
         address.stateKey
       );
     },

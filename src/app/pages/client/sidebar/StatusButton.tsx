@@ -1,16 +1,5 @@
 import React, { MouseEventHandler, useCallback, useState } from 'react';
-import {
-  Box,
-  color,
-  config,
-  Icon,
-  Icons,
-  Menu,
-  MenuItem,
-  PopOut,
-  RectCords,
-  Text,
-} from 'folds';
+import { Box, color, config, Icon, Icons, Menu, MenuItem, PopOut, RectCords, Text } from 'folds';
 import FocusTrap from 'focus-trap-react';
 import { useMatrixClient } from '../../../hooks/useMatrixClient';
 import { useCustomStatus } from '../../../hooks/useCustomStatus';
@@ -78,9 +67,9 @@ export function StatusButton() {
           >
             <Menu variant="Surface" style={{ padding: config.space.S200, width: 'max-content' }}>
               <Box direction="Column" gap="100">
-                {presets.map((preset, idx) => (
+                {presets.map((preset) => (
                   <MenuItem
-                    key={`${preset.emoji}-${preset.text}-${idx}`}
+                    key={`${preset.emoji}-${preset.text}`}
                     size="300"
                     radii="300"
                     onClick={() => handleSelect(preset.emoji, preset.text)}
@@ -91,9 +80,7 @@ export function StatusButton() {
                         {preset.text}
                       </Text>
                     </Box>
-                    {isActive(preset.emoji, preset.text) && (
-                      <Icon size="50" src={Icons.Check} />
-                    )}
+                    {isActive(preset.emoji, preset.text) && <Icon size="50" src={Icons.Check} />}
                   </MenuItem>
                 ))}
               </Box>
