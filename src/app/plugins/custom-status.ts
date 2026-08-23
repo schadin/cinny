@@ -1,4 +1,4 @@
-import { MatrixClient, MsgType, UserEvent } from 'matrix-js-sdk';
+import { MatrixClient, MsgType, SetPresence, UserEvent } from 'matrix-js-sdk';
 
 export type CustomStatus = {
   emoji?: string;
@@ -144,13 +144,33 @@ export const clearCustomStatus = (mx: MatrixClient): Promise<void> => {
 };
 
 export const restoreCustomStatus = (mx: MatrixClient): void => {
-  const statusMsg = getActiveStatusMsg();
-  if (!statusMsg) return;
+  const saved = getActiveStatusMsg();
+  if (!saved) return;
 
   const userId = mx.getUserId();
   const user = userId ? mx.getUser(userId) : undefined;
-  if (user && user.presenceStatusMsg !== undefined) return;
+  if (!user) return;
 
-  updateLocalPresence(mx, statusMsg);
-  mx.setPresence({ presence: 'online', status_msg: statusMsg }).catch(() => undefined);
+  // решение принимается только при известном серверном значении:
+  // undefined означает, что собственное m.presence ещё не приходило
+  const serverMsg = user.presenceStatusMsg;
+  if (serverMsg === undefined) return;
+
+  // сервер уже вернул актуальный статус (например, сменённый с другого
+  // устройства) — приоритет у сервера, локальный кэш синхронизируется
+  if (serverMsg && serverMsg !== saved) {
+    saveActiveStatusMsg(serverMsg);
+    return;
+  }
+
+  // статус совпадает — отправлять на сервер нечего
+  if (serverMsg === saved) return;
+
+  // серверное значение пустое (утеряно/истекло) — восстанавливаем локальный
+  // статус, сохраняя текущее presence пользователя
+  updateLocalPresence(mx, saved);
+  mx.setPresence({
+    presence: (user.presence as SetPresence) ?? SetPresence.Online,
+    status_msg: saved,
+  }).catch(() => undefined);
 };

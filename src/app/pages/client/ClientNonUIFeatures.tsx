@@ -2,14 +2,15 @@ import { useAtomValue } from 'jotai';
 import React, { ReactNode, useCallback, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  ClientEvent,
-  ClientEventHandlerMap,
   MatrixEvent,
   MatrixEventEvent,
   Room,
   RoomEvent,
   RoomEventHandlerMap,
+  User,
+  UserEvent,
 } from 'matrix-js-sdk';
+
 import { roomToUnreadAtom, unreadEqual, unreadInfoToUnread } from '../../state/room/roomToUnread';
 import LogoSVG from '../../../../public/res/svg/cinny.svg';
 import LogoUnreadSVG from '../../../../public/res/svg/cinny-unread.svg';
@@ -52,23 +53,43 @@ import { updateTrayIcon } from '../../utils/trayIcon';
 import { useRestoreBackupOnStartup } from '../../hooks/useRestoreBackupOnStartup';
 import { useRetryDecryptionOnKeyArrival } from '../../hooks/useRetryDecryptionOnKeyArrival';
 
+const PRESENCE_WAIT_TIMEOUT_MS = 15_000;
+
 function CustomStatusRestore() {
   const mx = useMatrixClient();
-  const restoredRef = useRef(false);
 
   useEffect(() => {
-    const handleSync: ClientEventHandlerMap[ClientEvent.Sync] = (state) => {
-      if (state !== 'SYNCING' || restoredRef.current) return;
-      restoredRef.current = true;
-      restoreCustomStatus(mx);
-    };
+    let settled = false;
+    let timer: number | undefined;
+    const userId = mx.getUserId();
+    const user = userId ? mx.getUser(userId) : undefined;
 
-    mx.on(ClientEvent.Sync, handleSync);
-    const currentState = mx.getSyncState();
-    if (currentState) handleSync(currentState, mx.getSyncState());
+    // решение о восстановлении — только после прихода собственного m.presence
+    function handlePresence(_event: MatrixEvent | undefined, u: User) {
+      if (u.presenceStatusMsg !== undefined) settle();
+    }
+
+    function settle() {
+      if (settled) return;
+      settled = true;
+      user?.removeListener(UserEvent.Presence, handlePresence);
+      window.clearTimeout(timer);
+      restoreCustomStatus(mx);
+    }
+
+    timer = window.setTimeout(settle, PRESENCE_WAIT_TIMEOUT_MS);
+
+    if (user && user.presenceStatusMsg !== undefined) {
+      settle();
+      return undefined;
+    }
+
+    user?.on(UserEvent.Presence, handlePresence);
 
     return () => {
-      mx.removeListener(ClientEvent.Sync, handleSync);
+      settled = true;
+      user?.removeListener(UserEvent.Presence, handlePresence);
+      window.clearTimeout(timer);
     };
   }, [mx]);
 
